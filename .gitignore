@@ -1,2 +1,5 @@
 mu/
 um/
+data/
+*.o
+load_data
