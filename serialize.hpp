@@ -5,8 +5,9 @@
 
 using namespace std;
 
-/* Serializes a vector of int* each of length len to the given file */
-void serialize(vector<int*>* vec, string file, int len, bool to_free = true);
+/* Serializes a vector of vectors to the given file. Optionally frees the vec
+ * after serialization */
+void serialize(vector<vector<int>*>* vec, string file, bool to_free = true);
 
 /* Unserializes data into a vector of int* where each int* is of length len */
-vector<int*>* unserialize(string file, int len);
+vector<vector<int>*>* unserialize(string file);

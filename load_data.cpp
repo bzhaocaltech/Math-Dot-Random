@@ -9,10 +9,11 @@
 #include <vector>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #include "serialize.hpp"
 using namespace std;
 
-int* parse_line(string line);
+vector<int>* parse_line(string line);
 
 int main() {
   fstream mu_dta;
@@ -33,16 +34,16 @@ int main() {
   string index_string;
 
   // Get the mu training data
-  vector<int*>* mu_train = new vector<int*>();
-  vector<int*>* mu_valid = new vector<int*>();;
-  vector<int*>* mu_hidden = new vector<int*>();;
-  vector<int*>* mu_probe = new vector<int*>();;
-  vector<int*>* mu_qual = new vector<int*>();;
+  vector<vector<int>*>* mu_train = new vector<vector<int>*>();
+  vector<vector<int>*>* mu_valid = new vector<vector<int>*>();;
+  vector<vector<int>*>* mu_hidden = new vector<vector<int>*>();;
+  vector<vector<int>*>* mu_probe = new vector<vector<int>*>();;
+  vector<vector<int>*>* mu_qual = new vector<vector<int>*>();;
   fprintf(stderr, "Loading mu files...");
   int num_lines = 0;
   while (getline(mu_dta, line) && getline(mu_idx, index_string)) {
     int index = atoi(index_string.c_str());
-    int* parsed_line = parse_line(line);
+    vector<int>* parsed_line = parse_line(line);
     // Part of base
     if (index == 1) {
       mu_train->push_back(parsed_line);
@@ -72,24 +73,24 @@ int main() {
 
   // Serialize the mu files
   fprintf(stderr, "Serializing mu files...");
-  serialize(mu_train, "data/mu_train.ser", 4);
-  serialize(mu_valid, "data/mu_valid.ser", 4);
-  serialize(mu_hidden, "data/mu_hidden.ser", 4);
-  serialize(mu_probe, "data/mu_probe.ser", 3);
-  serialize(mu_qual, "data/mu_qual.ser", 3);
+  serialize(mu_train, "data/mu_train.ser");
+  serialize(mu_valid, "data/mu_valid.ser");
+  serialize(mu_hidden, "data/mu_hidden.ser");
+  serialize(mu_probe, "data/mu_probe.ser");
+  serialize(mu_qual, "data/mu_qual.ser");
   fprintf(stderr, "\n");
 
   // Get the um training data
-  vector<int*>* um_train = new vector<int*>();
-  vector<int*>* um_valid = new vector<int*>();;
-  vector<int*>* um_hidden = new vector<int*>();;
-  vector<int*>* um_probe = new vector<int*>();;
-  vector<int*>* um_qual = new vector<int*>();;
+  vector<vector<int>*>* um_train = new vector<vector<int>*>();
+  vector<vector<int>*>* um_valid = new vector<vector<int>*>();
+  vector<vector<int>*>* um_hidden = new vector<vector<int>*>();
+  vector<vector<int>*>* um_probe = new vector<vector<int>*>();
+  vector<vector<int>*>* um_qual = new vector<vector<int>*>();
   fprintf(stderr, "Loading um files...");
   num_lines = 0;
   while (getline(um_dta, line) && getline(um_idx, index_string)) {
     int index = atoi(index_string.c_str());
-    int* parsed_line = parse_line(line);
+    vector<int>* parsed_line = parse_line(line);
     // Part of base
     if (index == 1) {
       um_train->push_back(parsed_line);
@@ -119,11 +120,11 @@ int main() {
 
   // Serialize the um files
   fprintf(stderr, "Serializing um files...");
-  serialize(um_train, "data/um_train.ser", 4);
-  serialize(um_valid, "data/um_valid.ser", 4);
-  serialize(um_hidden, "data/um_hidden.ser", 4);
-  serialize(um_probe, "data/um_probe.ser", 3);
-  serialize(um_qual, "data/um_qual.ser", 3);
+  serialize(um_train, "data/um_train.ser");
+  serialize(um_valid, "data/um_valid.ser");
+  serialize(um_hidden, "data/um_hidden.ser");
+  serialize(um_probe, "data/um_probe.ser");
+  serialize(um_qual, "data/um_qual.ser");
   fprintf(stderr, "\n");
 
   // Close files
@@ -136,13 +137,13 @@ int main() {
   return 0;
 }
 
-/* Parses a line in the .dta files into a integer array */
-int* parse_line(string line) {
-  int* int_array = (int*) malloc(4 * sizeof(int));
+/* Parses a line in the .dta files into a vector */
+vector<int>* parse_line(string line) {
+  vector<int>* vec = new vector<int>();
   for (int i = 0; i < 3; i++) {
-    int_array[i] = atoi(line.substr(0, line.find(' ')).c_str());
+    vec->push_back(atoi(line.substr(0, line.find(' ')).c_str()));
     line = line.substr(line.find(' ') + 1);
   }
-  int_array[3] = atoi(line.c_str());
-  return int_array;
+  vec->push_back(atoi(line.c_str()));
+  return vec;
 }
