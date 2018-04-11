@@ -14,5 +14,8 @@ serialize.o: serialize.cpp serialize.hpp
 load_data.o: load_data.cpp serialize.o
 	$(CXX) $(CXXFLAGS) -c load_data.cpp
 
+model.o: model.hpp model.cpp
+	$(CXX) $(CXXFLAGS) -c model.cpp
+
 clean:
 	$(RM) $(TOCLEAN)
