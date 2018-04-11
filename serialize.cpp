@@ -51,7 +51,6 @@ vector<int*>* unserialize(string file, int len) {
     int* arr = (int*) malloc(sizeof(int) * len);
     for (int j = 0; j < len; j++) {
       ia >> *(arr + j);
-      fprintf(stderr, "%i\n", arr[j]);
     }
     vec->push_back(arr);
   }
