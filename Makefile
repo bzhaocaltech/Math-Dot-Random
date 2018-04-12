@@ -3,7 +3,9 @@ CXXFLAGS = -std=c++14 -Wall -g
 BOOSTROOT = -L/usr/local/lib
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
-TOCLEAN = load_data *.o
+EXECUTABLES = load_data
+
+all: $(EXECUTABLES)
 
 load_data: load_data.o
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) -static load_data.o serialize.o -o load_data $(BOOSTSERIALIZE)
@@ -21,4 +23,4 @@ output.o: output.hpp output.cpp
 	$(CXX) $(CXXFLAGS) -c output.cpp
 
 clean:
-	$(RM) $(TOCLEAN)
+	$(RM) $(EXECUTABLES) *.o
