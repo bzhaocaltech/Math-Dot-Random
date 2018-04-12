@@ -1,8 +1,9 @@
 #include "model.hpp"
+#include <math.h>
 
 using namespace std;
 
-/* Returns the combined error for a set. Lower score is better. The elements
+/* Returns the mean error for a set. Lower score is better. The elements
  * of the vector are in the form of (user, movie, time, rating) */
 float Model::score(vector<int*>* x) {
   float error = 0;
@@ -11,5 +12,11 @@ float Model::score(vector<int*>* x) {
     // Add the error of this single prediction to the total error
     error += this->error(predictions->at(i), x->at(i)[3]);
   }
-  return error;
+  return error / (float) predictions->size();
+}
+
+/* Uses an some measure to return the error incurred by a predicted rating.
+ * Uses squared error by default unless overloaded by a child class. */
+float Model::error(float predicted_rating, int actual_rating) {
+  return pow((predicted_rating - (float) actual_rating), 2);
 }

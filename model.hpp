@@ -13,10 +13,11 @@ class Model {
      * rating */
     virtual vector<float>* predict(vector<int*>* x) = 0;
 
-    /* Uses an some measure to return the error incurred by a predicted rating */
-    virtual float error(float predicted_rating, int actual_rating) = 0;
+    /* Uses an some measure to return the error incurred by a predicted rating.
+     * Uses squared error by default unless overloaded by a child class. */
+    float error(float predicted_rating, int actual_rating);
 
-    /* Returns the combined error for a set. Lower score is better. The elements
+    /* Returns the mean error for a set. Lower score is better. The elements
      * of the vector are in the form of (user, movie, time, rating) */
     float score(vector<int*>* x);
 
