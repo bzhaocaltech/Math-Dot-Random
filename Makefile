@@ -22,5 +22,8 @@ model.o: model.hpp model.cpp
 output.o: output.hpp output.cpp
 	$(CXX) $(CXXFLAGS) -c output.cpp
 
+mean_model.o: model.o mean_model.cpp mean_model.hpp
+	$(CXX) $(CXXFLAGS) -c mean_model.cpp
+
 clean:
 	$(RM) $(EXECUTABLES) *.o
