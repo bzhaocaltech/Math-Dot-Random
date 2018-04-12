@@ -1,5 +1,6 @@
 #include "mean_model.hpp"
 #include <stdlib.h>
+#include <stdio.h>
 
 /* Constructor for the mean model. Takes the number of movies and number
  * of users which is by default set to the defines in model.hpp */
@@ -28,6 +29,7 @@ vector<float>* Mean_Model::predict(vector<int*>* x) {
 void Mean_Model::fit(vector<int*>* x) {
   int* movie_count = (int*) malloc(sizeof(int) * this->num_of_movies);
   int* user_count = (int*) malloc(sizeof(int) * this->num_of_users);
+  fprintf(stderr, "Fitting model");
   // Find aggreggate of ratings
   for (unsigned int i = 0; i < x->size(); i++) {
     int user = x->at(i)[0];
@@ -37,6 +39,9 @@ void Mean_Model::fit(vector<int*>* x) {
     user_count[user]++;
     this->movie_means[movie] += rating;
     this->user_means[user] += rating;
+    if (i % 3000000 == 0) {
+      fprintf(stderr, ".");
+    }
   }
   // Divide to get the average rating
   for (int i = 0; i < this->num_of_movies; i++) {
@@ -45,6 +50,7 @@ void Mean_Model::fit(vector<int*>* x) {
   for (int i = 0; i < this->num_of_users; i++) {
     this->user_means[i] /= user_count[i];
   }
+  fprintf(stderr, "\n");
 }
 
 Mean_Model::~Mean_Model() {
