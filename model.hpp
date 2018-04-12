@@ -3,6 +3,10 @@
 
 using namespace std;
 
+#define NUM_USERS 458293
+#define NUM_MOVIES 17770
+#define NUM_DATES 2243
+
 class Model {
   public:
     /* Given a list of x values in the form of (user, movie, time) predicts the
