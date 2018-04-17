@@ -17,8 +17,10 @@ Mean_Model::Mean_Model(int num_of_movies, int num_of_users) {
 vector<float>* Mean_Model::predict(vector<int*>* x) {
   vector<float>* predictions = new vector<float>();
   for (unsigned int i = 0; i < x->size(); i++) {
-    float user_rating = this->user_means[x->at(i)[0]];
-    float movie_rating = this->movie_means[x->at(i)[1]];
+    int user = x->at(i)[0];
+    int movie = x->at(i)[1];
+    float user_rating = this->user_means[user];
+    float movie_rating = this->movie_means[movie];
     predictions->push_back(user_rating + movie_rating / (float) 2);
   }
   return predictions;
@@ -27,9 +29,9 @@ vector<float>* Mean_Model::predict(vector<int*>* x) {
 /* Fits the model given a set of data in the form of (user, movie, time,
  * rating) by filling out movie_means and user_means */
 void Mean_Model::fit(vector<int*>* x) {
+  fprintf(stderr, "Fitting model");
   int* movie_count = (int*) malloc(sizeof(int) * this->num_of_movies);
   int* user_count = (int*) malloc(sizeof(int) * this->num_of_users);
-  fprintf(stderr, "Fitting model");
   // Find aggreggate of ratings
   for (unsigned int i = 0; i < x->size(); i++) {
     int user = x->at(i)[0];
@@ -45,15 +47,15 @@ void Mean_Model::fit(vector<int*>* x) {
   }
   // Divide to get the average rating
   for (int i = 0; i < this->num_of_movies; i++) {
-    this->movie_means[i] /= movie_count[i];
+    this->movie_means[i] /= (float) movie_count[i];
   }
   for (int i = 0; i < this->num_of_users; i++) {
-    this->user_means[i] /= user_count[i];
+    this->user_means[i] /= (float) user_count[i];
   }
   fprintf(stderr, "\n");
 }
 
 Mean_Model::~Mean_Model() {
-  free(movie_means);
-  free(user_means);
+  free(this->movie_means);
+  free(this->user_means);
 }

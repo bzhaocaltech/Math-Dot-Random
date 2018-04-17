@@ -38,6 +38,7 @@ void serialize(vector<int*>* vec, string file, int len, bool to_free) {
 
 /* Unserializes data into a vector of int* where each int* is of length len */
 vector<int*>* unserialize(string file, int len) {
+  fprintf(stderr, "Unserializing %s", file.c_str());
   ifstream ifs(file);
   boost::archive::text_iarchive ia(ifs);
 
@@ -53,7 +54,10 @@ vector<int*>* unserialize(string file, int len) {
       ia >> *(arr + j);
     }
     vec->push_back(arr);
+    if (i % 3000000 == 0) {
+      fprintf(stderr, ".");
+    }
   }
-
+  fprintf(stderr, "\n");
   return vec;
 }

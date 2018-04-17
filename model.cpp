@@ -12,7 +12,8 @@ float Model::score(vector<int*>* x) {
     // Add the error of this single prediction to the total error
     error += this->error(predictions->at(i), x->at(i)[3]);
   }
-  return error / (float) predictions->size();
+  float mse = error / (float) predictions->size();
+  return pow(mse, 0.5);
 }
 
 /* Uses an some measure to return the error incurred by a predicted rating.
