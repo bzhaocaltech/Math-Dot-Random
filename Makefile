@@ -1,19 +1,21 @@
 CXX = g++
 CXXFLAGS = -std=c++14 -Wall -g
-BOOSTROOT = -L/usr/local/lib
+BOOSTROOT = -L/usr/local/lib -static
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
 EXECUTABLES = load_data model_1
+LOAD_DATA_DEP = load_data.o serialize.o
+MODEL_1_DEP = mean_model.o serialize.o model_1.o model.o output.o
 
 all: $(EXECUTABLES)
 
-load_data: load_data.o
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) -static load_data.o serialize.o -o load_data $(BOOSTSERIALIZE)
+load_data: $(LOAD_DATA_DEP)
+	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(LOAD_DATA_DEP) -o load_data $(BOOSTSERIALIZE)
 
 serialize.o: serialize.cpp serialize.hpp
 	$(CXX) $(CXXFLAGS) -c serialize.cpp
 
-load_data.o: load_data.cpp serialize.o
+load_data.o: load_data.cpp
 	$(CXX) $(CXXFLAGS) -c load_data.cpp
 
 model.o: model.hpp model.cpp
@@ -25,8 +27,8 @@ output.o: output.hpp output.cpp
 mean_model.o: model.o mean_model.cpp mean_model.hpp
 	$(CXX) $(CXXFLAGS) -c mean_model.cpp
 
-model_1: mean_model.o serialize.o model_1.o model.o output.o
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) -static model_1.o serialize.o mean_model.o output.o model.o -o model_1 $(BOOSTSERIALIZE)
+model_1: $(MODEL_1_DEP)
+	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)
 
 clean:
 	$(RM) $(EXECUTABLES) *.o results.dta
