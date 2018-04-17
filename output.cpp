@@ -1,5 +1,6 @@
 #include "output.hpp"
-// #include <stdio.h>
+#include <iostream>
+#include <fstream>
 
 /* Outputs a vector<float> of predictions to a given file */
 void output(vector<float> predictions, string file) {
@@ -12,4 +13,3 @@ void output(vector<float> predictions, string file) {
     }
     file_out.close();
 }
-#include <vector>

@@ -2,6 +2,7 @@
 
 #include "mean_model.hpp"
 #include "serialize.hpp"
+#include "output.hpp"
 
 int main() {
   vector<int*>* x_train = unserialize("data/mu_train.ser", 4);
@@ -16,6 +17,16 @@ int main() {
   score = model->score(x_train);
 
   printf("In sample MSE is %f\n", score);
+
+  vector<int*>* x_test = unserialize("data/mu_qual.ser", 3);
+  vector<float>* predictions = model->predict(x_test);
+
+  output(*predictions, "results.dta");
+
+  free(x_train);
+  free(x_valid);
+  free(x_test);
+  free(predictions);
 
   return 0;
 }

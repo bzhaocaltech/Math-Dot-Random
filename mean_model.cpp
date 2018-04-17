@@ -21,7 +21,7 @@ vector<float>* Mean_Model::predict(vector<int*>* x) {
     int movie = x->at(i)[1];
     float user_rating = this->user_means[user];
     float movie_rating = this->movie_means[movie];
-    predictions->push_back(user_rating + movie_rating / (float) 2);
+    predictions->push_back((user_rating + movie_rating) / (float) 2);
   }
   return predictions;
 }
@@ -52,6 +52,9 @@ void Mean_Model::fit(vector<int*>* x) {
   for (int i = 0; i < this->num_of_users; i++) {
     this->user_means[i] /= (float) user_count[i];
   }
+  free(movie_count);
+  free(user_count);
+
   fprintf(stderr, "\n");
 }
 
