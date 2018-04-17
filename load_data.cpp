@@ -140,7 +140,7 @@ int main() {
 int* parse_line(string line) {
   int* int_array = (int*) malloc(4 * sizeof(int));
   for (int i = 0; i < 3; i++) {
-    int_array[i] = atoi(line.substr(0, line.find(' ')).c_str());
+    int_array[i] = atoi(line.substr(0, line.find(' ')).c_str()) - 1;
     line = line.substr(line.find(' ') + 1);
   }
   int_array[3] = atoi(line.c_str());
