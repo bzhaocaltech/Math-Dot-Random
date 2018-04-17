@@ -29,4 +29,4 @@ model_1: mean_model.o serialize.o model_1.o model.o output.o
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) -static model_1.o serialize.o mean_model.o output.o model.o -o model_1 $(BOOSTSERIALIZE)
 
 clean:
-	$(RM) $(EXECUTABLES) *.o
+	$(RM) $(EXECUTABLES) *.o results.dta
