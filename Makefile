@@ -29,11 +29,14 @@ output.o: output.hpp output.cpp
 mean_model.o: model.o mean_model.cpp mean_model.hpp
 	$(CXX) $(CXXFLAGS) -c mean_model.cpp
 
+svd.o: model.o svd.cpp svd.hpp
+	$(CXX) $(CXXFLAGS) -c svd.cpp
+
 model_1: $(MODEL_1_DEP)
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)
 
 model_2: $(MODEL_2_DEP)
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(SVD_DEP) -o model_2 $(BOOSTSERIALIZE) $(BOOSTMATRIX)
+	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_2_DEP) -o model_2 $(BOOSTSERIALIZE) $(BOOSTMATRIX)
 
 clean:
 	$(RM) $(EXECUTABLES) *.o results.dta
