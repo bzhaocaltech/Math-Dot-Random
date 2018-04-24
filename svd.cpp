@@ -78,6 +78,8 @@ std::vector<float>* SVD::predict(std::vector<int*>* x) {
     return predictions;
 }
 
+/* Given a list of x values in the form of (user, movie, time, rating)
+ * fits the model */
 void SVD::fit(std::vector<int*>* x, int epochs) {
     fprintf(stderr, "Fitting the data of size %i\n", (int) x->size());
 
@@ -86,9 +88,9 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
     fprintf(stderr, "Calculating the global bias\n");
     for (unsigned int i = 0; i < x->size(); i++) {
         int rating = x->at(i)[3];
-        this->mu += rating;
+        this->mu += (double) rating;
     }
-    this->mu /= (float) x->size();
+    this->mu /= (double) x->size();
     fprintf(stderr, "Global bias was %f\n", this->mu);
 
     // Initialize U, V, a, b randomly
@@ -99,19 +101,16 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
             (*this->U)(i, j) = random;
         }
     }
-    fprintf(stderr, "Initialized U");
     for (int i = 0; i < this->num_movies; i++) {
         for (int j = 0; j < this->latent_factors; j++) {
             float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
             (*this->V)(i, j) = random;
         }
     }
-    fprintf(stderr, "Initialized V");
     for (int i = 0; i < this->num_users; i++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
         this->a[i] = random;
     }
-    fprintf(stderr, "Initialized a");
     for (int j = 0; j < this->num_movies; j++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
         this->b[j] = random;

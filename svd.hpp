@@ -27,7 +27,7 @@ class SVD : public Model {
         // Regularization factor
         float reg;
         // Global bias
-        float mu;
+        double mu;
 
         boost::numeric::ublas::vector<float> grad_U(int Yij, int i, int j);
         boost::numeric::ublas::vector<float> grad_V(int Yij, int i, int j);
@@ -35,18 +35,16 @@ class SVD : public Model {
         float grad_b(int Yij, int i, int j);
     public:
         /* Constructor for SVD */
-        SVD(int latent_factors, float eta, float reg,
-            int num_movies = NUM_MOVIES, int num_users = NUM_USERS);
+        SVD(int latent_factors, float eta, float reg, int num_users = NUM_USERS,
+            int num_movies = NUM_MOVIES);
 
         /* Given a list of x values in the form of (user, movie, time) predicts
             * the rating */
         std::vector<float>* predict(std::vector<int*>* x);
 
         /* Given a list of x values in the form of (user, movie, time, rating)
-            * fits the model */
+         * fits the model */
         void fit(std::vector<int*>* x, int epochs);
-
-        void fit(std::vector<int*>* x);
 
         /* Destructor for SVD */
         ~SVD();
