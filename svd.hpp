@@ -11,8 +11,8 @@ class SVD : public Model {
         /* The two matrices of latent factors
             * U is a num_users * latent_factors
             * V is a num_movies * latent_factors */
-        matrix<float> U;
-        matrix<float> V;
+        matrix<float> *U;
+        matrix<float> *V;
         // The user biases
         float* a;
         // The movie biases
