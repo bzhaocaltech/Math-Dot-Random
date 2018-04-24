@@ -1,5 +1,6 @@
 #include "model.hpp"
 #include <math.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -13,6 +14,7 @@ float Model::score(vector<int*>* x) {
     error += this->error(predictions->at(i), x->at(i)[3]);
   }
   float mse = error / (float) predictions->size();
+  free(predictions);
   return pow(mse, 0.5);
 }
 

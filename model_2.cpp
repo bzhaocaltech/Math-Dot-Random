@@ -9,7 +9,7 @@ int main() {
   std::vector<int*>* x_valid = unserialize("data/mu_valid.ser", 4);
 
   SVD* svd = new SVD(10, 0.03, 0.01);
-  svd->fit(x_train, 3);
+  svd->fit(x_train, 10);
   float score = svd->score(x_valid);
   printf("Out of sample MSE is %f\n", score);
   score = svd->score(x_train);
