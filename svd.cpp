@@ -82,6 +82,7 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
     fprintf(stderr, "Fitting the data of size %i\n", (int) x->size());
 
     // Calculate the global bias
+    this->mu = 0;
     fprintf(stderr, "Calculating the global bias\n");
     for (unsigned int i = 0; i < x->size(); i++) {
         int rating = x->at(i)[3];
@@ -98,16 +99,19 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
             this->U (i, j) = random;
         }
     }
+    fprintf(stderr, "Initialized U");
     for (int i = 0; i < this->num_movies; i++) {
         for (int j = 0; j < this->latent_factors; j++) {
             float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
             this->V (i, j) = random;
         }
     }
+    fprintf(stderr, "Initialized V");
     for (int i = 0; i < this->num_users; i++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
         this->a[i] = random;
     }
+    fprintf(stderr, "Initialized a");
     for (int j = 0; j < this->num_movies; j++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
         this->b[j] = random;
@@ -123,8 +127,8 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
             int rating = data[3];
             row(this->U, user) -= grad_U(rating, user, movie);
             row(this->V, movie) -= grad_V(rating, user, movie);
-            row(this->a, user) -= grad_a(rating, user, movie);
-            row(this->b, movie) -= grad_b(rating, user, movie);
+            a[user] -= grad_a(rating, user, movie);
+            b[movie] -= grad_b(rating, user, movie);
             if (i % 3000000 == 0) {
                 fprintf(stderr, ".");
             }

@@ -46,6 +46,8 @@ class SVD : public Model {
             * fits the model */
         void fit(std::vector<int*>* x, int epochs);
 
+        void fit(std::vector<int*>* x);
+
         /* Destructor for SVD */
         ~SVD();
 };

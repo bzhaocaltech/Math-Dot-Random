@@ -23,5 +23,5 @@ class Model {
 
     /* Fits the model given a set of data in the form of (user, movie, time,
      * rating) */
-    virtual void fit(vector<int*>* x) = 0;
+    // virtual void fit(vector<int*>* x) = 0;
 };

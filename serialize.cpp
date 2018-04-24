@@ -9,7 +9,7 @@ using namespace std;
 /* Serializes a vector of int* each of length len to the given file.
  * The bool free determines whether or not the vector is freed at the end of
  * serialization */
-void serialize(vector<int*>* vec, string file, int len, bool to_free) {
+void serialize(std::vector<int*>* vec, string file, int len, bool to_free) {
   ofstream ofs(file);
   boost::archive::text_oarchive oa(ofs);
 
@@ -37,7 +37,7 @@ void serialize(vector<int*>* vec, string file, int len, bool to_free) {
 }
 
 /* Unserializes data into a vector of int* where each int* is of length len */
-vector<int*>* unserialize(string file, int len) {
+std::vector<int*>* unserialize(string file, int len) {
   fprintf(stderr, "Unserializing %s", file.c_str());
   ifstream ifs(file);
   boost::archive::text_iarchive ia(ifs);
@@ -47,7 +47,7 @@ vector<int*>* unserialize(string file, int len) {
   ia & size;
 
   // Unserialize each int
-  vector<int*>* vec = new vector<int*>();
+  std::vector<int*>* vec = new vector<int*>();
   for (int i = 0; i < size; i++) {
     int* arr = (int*) malloc(sizeof(int) * len);
     for (int j = 0; j < len; j++) {

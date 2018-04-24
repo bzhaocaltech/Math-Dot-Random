@@ -5,4 +5,4 @@
 using namespace std;
 
 /* Outputs a vector<float> of predictions to a given file */
-void output(vector<float> predictions, string file);
+void output(std::vector<float> predictions, string file);

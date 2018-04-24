@@ -2,7 +2,6 @@ CXX = g++
 CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG
 BOOSTROOT = -L/usr/local/lib -static
 BOOSTSERIALIZE = -lboost_serialization
-BOOSTMATRIX = -lboost_ublas
 .PHONY: clean
 EXECUTABLES = load_data model_1 model_2
 LOAD_DATA_DEP = load_data.o serialize.o
@@ -36,7 +35,7 @@ model_1: $(MODEL_1_DEP)
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)
 
 model_2: $(MODEL_2_DEP)
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_2_DEP) -o model_2 $(BOOSTSERIALIZE) $(BOOSTMATRIX)
+	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_2_DEP) -o model_2 $(BOOSTSERIALIZE)
 
 clean:
 	$(RM) $(EXECUTABLES) *.o results.dta

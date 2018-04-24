@@ -6,7 +6,7 @@
 using namespace std;
 
 /* Serializes a vector of int* each of length len to the given file */
-void serialize(vector<int*>* vec, string file, int len, bool to_free = true);
+void serialize(std::vector<int*>* vec, string file, int len, bool to_free = true);
 
 /* Unserializes data into a vector of int* where each int* is of length len */
-vector<int*>* unserialize(string file, int len);
+std::vector<int*>* unserialize(string file, int len);
