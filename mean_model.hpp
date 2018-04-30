@@ -16,14 +16,13 @@ class Mean_Model: public Model {
      * of users which is by default set to the defines in model.hpp */
     Mean_Model(int num_of_movies = NUM_MOVIES, int num_of_users = NUM_USERS);
 
-    /* Given a list of x values in the form of (user, movie, time) predicts the
-     * rating. Predicted rating of user i and movie j is
+    /* Given dataset returns vector containing predicted rating.
+     * Predicted rating of user i and movie j is
      * (user_means[i] + movie_means[i]) / 2 */
-    vector<float>* predict(vector<int*>* x);
+    vector<float>* predict(struct dataset* dataset);
 
-    /* Fits the model given a set of data in the form of (user, movie, time,
-     * rating) by filling out movie_means and user_means */
-    void fit(vector<int*>* x);
+    /* Fits the model given a dataset filling out movie_means and user_means */
+    void fit(struct dataset* dataset);
 
     /* Destructor for mean model */
     ~Mean_Model();

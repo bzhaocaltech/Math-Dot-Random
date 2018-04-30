@@ -14,11 +14,11 @@ Mean_Model::Mean_Model(int num_of_movies, int num_of_users) {
 /* Given a list of x values in the form of (user, movie, time) predicts the
  * rating. Predicted rating of user i and movie j is
  * (user_means[i] + movie_means[i]) / 2 */
-vector<float>* Mean_Model::predict(vector<int*>* x) {
+vector<float>* Mean_Model::predict(struct dataset* dataset) {
   vector<float>* predictions = new vector<float>();
-  for (unsigned int i = 0; i < x->size(); i++) {
-    int user = x->at(i)[0];
-    int movie = x->at(i)[1];
+  for (int i = 0; i < dataset->size; i++) {
+    int user = dataset->data[i].user;
+    int movie = dataset->data[i].movie;
     float user_rating = this->user_means[user];
     float movie_rating = this->movie_means[movie];
     predictions->push_back((user_rating + movie_rating) / (float) 2);
@@ -28,15 +28,15 @@ vector<float>* Mean_Model::predict(vector<int*>* x) {
 
 /* Fits the model given a set of data in the form of (user, movie, time,
  * rating) by filling out movie_means and user_means */
-void Mean_Model::fit(vector<int*>* x) {
+void Mean_Model::fit(struct dataset* dataset) {
   fprintf(stderr, "Fitting model");
   int* movie_count = (int*) malloc(sizeof(int) * this->num_of_movies);
   int* user_count = (int*) malloc(sizeof(int) * this->num_of_users);
   // Find aggreggate of ratings
-  for (unsigned int i = 0; i < x->size(); i++) {
-    int user = x->at(i)[0];
-    int movie = x->at(i)[1];
-    float rating = (float) x->at(i)[3];
+  for (int i = 0; i < dataset->size; i++) {
+    int user = dataset->data[i].user;
+    int movie = dataset->data[i].movie;
+    float rating = (float) dataset->data[i].rating;
     movie_count[movie]++;
     user_count[user]++;
     this->movie_means[movie] += rating;

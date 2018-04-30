@@ -1,3 +1,6 @@
+#ifndef DATA_HPP
+#define DATA_HPP
+
 /* This files defines the basic data structs we will use while doing stuff */
 #include <cstdint>
 
@@ -22,3 +25,5 @@ struct dataset {
   struct data* data;
   int size;
 };
+
+#endif

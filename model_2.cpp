@@ -5,26 +5,29 @@
 #include "output.hpp"
 
 int main() {
-  std::vector<int*>* x_train = unserialize("data/mu_train.ser", 4);
-  std::vector<int*>* x_valid = unserialize("data/mu_valid.ser", 4);
+  struct dataset* x_train = unserialize("data/mu_train.ser");
+  struct dataset* x_valid = unserialize("data/mu_valid.ser");
 
-  SVD* svd = new SVD(20, 0.001, 0.005);
-  svd->fit(x_train, 100);
+  SVD* svd = new SVD(10, 0.001, 0.005);
+  svd->fit(x_train, 6);
   float score = svd->score(x_valid);
   printf("Out of sample MSE is %f\n", score);
   score = svd->score(x_train);
   printf("In sample MSE is %f\n", score);
 
-  free(x_train);
-  free(x_valid);
+  delete x_train->data;
+  delete x_train;
+  delete x_valid->data;
+  delete x_valid;
 
-  std::vector<int*>* x_test = unserialize("data/mu_qual.ser", 3);
+  struct dataset* x_test = unserialize("data/mu_qual.ser");
   std::vector<float>* predictions = svd->predict(x_test);
 
   output(*predictions, "results.dta");
 
-  free(x_test);
-  free(predictions);
+  delete x_test->data;
+  delete x_test;
+  delete predictions;
 
   return 0;
 }

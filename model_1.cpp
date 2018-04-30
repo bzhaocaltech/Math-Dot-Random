@@ -5,8 +5,8 @@
 #include "output.hpp"
 
 int main() {
-  vector<int*>* x_train = unserialize("data/mu_train.ser", 4);
-  vector<int*>* x_valid = unserialize("data/mu_valid.ser", 4);
+  struct dataset* x_train = unserialize("data/mu_train.ser");
+  struct dataset* x_valid = unserialize("data/mu_valid.ser");
 
   Mean_Model* model = new Mean_Model();
   model->fit(x_train);
@@ -18,16 +18,19 @@ int main() {
 
   printf("In sample MSE is %f\n", score);
 
-  free(x_train);
-  free(x_valid);
+  delete x_train->data;
+  delete x_train;
+  delete x_valid->data;
+  delete x_valid;
 
-  vector<int*>* x_test = unserialize("data/mu_qual.ser", 3);
+  struct dataset* x_test = unserialize("data/mu_qual.ser");
   vector<float>* predictions = model->predict(x_test);
 
   output(*predictions, "results.dta");
 
-  free(x_test);
-  free(predictions);
+  delete x_test->data;
+  delete x_test;
+  delete predictions;
 
   return 0;
 }
