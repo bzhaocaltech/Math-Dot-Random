@@ -6,7 +6,7 @@ BOOSTSERIALIZE = -lboost_serialization
 EXECUTABLES = load_data model_1 model_2
 LOAD_DATA_DEP = load_data.o serialize.o
 MODEL_1_DEP = mean_model.o serialize.o model_1.o model.o output.o
-MODEL_2_DEP = svd.o model_2.o model.o serialize.o output.o
+MODEL_2_DEP = matrix.o svd.o model_2.o model.o serialize.o output.o
 
 all: $(EXECUTABLES)
 
@@ -30,6 +30,9 @@ mean_model.o: model.o mean_model.cpp mean_model.hpp
 
 svd.o: model.o svd.cpp svd.hpp
 	$(CXX) $(CXXFLAGS) -c svd.cpp
+
+matrix.o: matrix.cpp matrix.hpp
+	$(CXX) $(CXXFLAGS) -c matrix.cpp
 
 model_1: $(MODEL_1_DEP)
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)

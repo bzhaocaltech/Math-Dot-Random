@@ -3,14 +3,11 @@
 #include "svd.hpp"
 #include <stdlib.h>
 #include <stdio.h>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
-
-using namespace boost::numeric::ublas;
 
 /* Constructor for SVD */
 SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies) {
-    this->U = new boost::numeric::ublas::matrix<float> (num_users, latent_factors);
-    this->V = new boost::numeric::ublas::matrix<float> (num_movies, latent_factors);
+    this->U = new Matrix(num_users, latent_factors);
+    this->V = new Matrix(num_movies, latent_factors);
     this->a = new float[num_users];
     this->b = new float[num_movies];
     this->latent_factors = latent_factors;
@@ -18,61 +15,86 @@ SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies
     this->reg = reg;
     this->num_movies = num_movies;
     this->num_users = num_users;
+    printf("Creating SVD with %i latent factors, learning rate %f, and reg %f \n",
+          this->latent_factors, this->eta, this->reg);
 }
 
 /* Takes as input the actual rating for the ith user and the jth movie.
  * Returns the gradient of the regularized loss function with respect to
  * Ui multiplied by eta */
-boost::numeric::ublas::vector<float> SVD::grad_U(int Yij, int i, int j) {
-    boost::numeric::ublas::vector<float> Ui = row(*this->U, i);
-    boost::numeric::ublas::vector<float> Vj = row(*this->V, j);
-    boost::numeric::ublas::vector<float> temp1 = (this->reg * Ui);
-    float temp2 = Yij - this->mu - inner_prod(Ui, Vj) - a[i] - b[j];
-    return this->eta * (temp1 - Vj * temp2);
+void SVD::grad_U(int Yij, int i, int j) {
+    float* Ui = this->U->row(i);
+    float* Vj = this->V->row(j);
+    float* temp1 = scalar_vec_prod(this->reg, Ui, this->latent_factors);
+    float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                      - this->a[i] - this->b[j];
+    float* temp3 = scalar_vec_prod(temp2, Vj, this->latent_factors);
+    float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
+    delete temp1;
+    delete temp3;
+    float* grad_u = scalar_vec_prod(this->eta, temp4, this->latent_factors);
+    delete temp4;
+    float* new_u = vec_sub(Ui, grad_u, this->latent_factors);
+    delete grad_u;
+    this->U->update_row(i, new_u);
 }
 
 /* Takes as input the actual rating for the ith user and the jth movie.
  * Returns the gradient of the regularized loss function with respect to
  * Vj multiplied by eta */
-boost::numeric::ublas::vector<float> SVD::grad_V(int Yij, int i, int j) {
-    boost::numeric::ublas::vector<float> Ui = row(*this->U, i);
-    boost::numeric::ublas::vector<float> Vj = row(*this->V, j);
-    boost::numeric::ublas::vector<float> temp1 = (this->reg * Vj);
-    float temp2 = Yij - this->mu - inner_prod(Ui, Vj) - a[i] - b[j];
-    return this->eta * (temp1 - Ui * temp2);
+void SVD::grad_V(int Yij, int i, int j) {
+    float* Ui = this->U->row(i);
+    float* Vj = this->V->row(j);
+    float* temp1 = scalar_vec_prod(this->reg, Vj, this->latent_factors);
+    float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                      - this->a[i] - this->b[j];
+    float* temp3 = scalar_vec_prod(temp2, Ui, this->latent_factors);
+    float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
+    delete temp1;
+    delete temp3;
+    float* grad_v = scalar_vec_prod(this->eta, temp4, this->latent_factors);
+    delete temp4;
+    float* new_v = vec_sub(Vj, grad_v, this->latent_factors);
+    delete grad_v;
+    this->V->update_row(j, new_v);
 }
 
 /* Same input as other grad functions. Returns the graident of the regularized
  * loss function with respect to ai multiplied by eta. */
-float SVD::grad_a(int Yij, int i, int j) {
-    boost::numeric::ublas::vector<float> Ui = row(*this->U, i);
-    boost::numeric::ublas::vector<float> Vj = row(*this->V, j);
-    float temp1 = this->reg * a[i];
-    float temp2 = Yij - this->mu - inner_prod(Ui, Vj) - a[i] - b[j];
-    return this->eta * (temp1 - temp2);
+void SVD::grad_a(int Yij, int i, int j) {
+    float* Ui = this->U->row(i);
+    float* Vj = this->V->row(j);
+    float temp1 = this->reg * this->a[i];
+    float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                  - this->a[i] - this->b[j];
+    float value = this->eta * (temp1 - temp2);
+    a[i] -= value;
 }
 
 /* Same input as other grad functions. Returns the graident of the regularized
  * loss function with respect to bj multiplied by eta. */
-float SVD::grad_b(int Yij, int i, int j) {
-    boost::numeric::ublas::vector<float> Ui = row(*this->U, i);
-    boost::numeric::ublas::vector<float> Vj = row(*this->V, j);
-    float temp1 = this->reg * b[j];
-    float temp2 = Yij - this->mu - inner_prod(Ui, Vj) - a[i] - b[j];
-    return this->eta * (temp1 - temp2);
+void SVD::grad_b(int Yij, int i, int j) {
+    float* Ui = this->U->row(i);
+    float* Vj = this->V->row(j);
+    float temp1 = this->reg * this->b[j];
+    float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                  - this->a[i] - this->b[j];
+    float value = this->eta * (temp1 - temp2);
+    b[j] -= value;
 }
 
 /* Given a list of x values in the form of (user, movie, time) predicts
     * the rating */
-std::vector<float>* SVD::predict(std::vector<int*>* x) {
-    std::vector<float>* predictions = new std::vector<float>();
+vector<float>* SVD::predict(std::vector<int*>* x) {
+    vector<float>* predictions = new vector<float>();
     for (unsigned int i = 0; i < x->size(); i++) {
         int* data = x->at(i);
         int user = data[0];
         int movie = data[1];
-        boost::numeric::ublas::vector<float> Ui = row(*this->U, user);
-        boost::numeric::ublas::vector<float> Vj = row(*this->V, movie);
-        float p = inner_prod(Ui, Vj) + this->a[user] + this->b[movie] + this->mu;
+        float* Ui = this->U->row(user);
+        float* Vj = this->V->row(movie);
+        float p = dot_prod(Ui, Vj, this->latent_factors) + this->a[user]
+                  + this->b[movie] + this->mu;
         predictions->push_back(p);
     }
     return predictions;
@@ -98,13 +120,13 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
     for (int i = 0; i < this->num_users; i++) {
         for (int j = 0; j < this->latent_factors; j++) {
             float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
-            (*this->U)(i, j) = random;
+            this->U->set_val(i, j, random);
         }
     }
     for (int i = 0; i < this->num_movies; i++) {
         for (int j = 0; j < this->latent_factors; j++) {
             float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
-            (*this->V)(i, j) = random;
+            this->V->set_val(i, j, random);
         }
     }
     for (int i = 0; i < this->num_users; i++) {
@@ -118,16 +140,15 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
     fprintf(stderr, "Matrices randomly initialized\n");
 
     for (int curr_epoch = 0; curr_epoch < epochs; curr_epoch++) {
-        fprintf(stderr, "Running epoch %i", curr_epoch);
+        fprintf(stderr, "Running epoch %i", curr_epoch + 1);
         for (unsigned int i = 0; i < x->size(); i++) {
-            int* data = x->at(i);
-            int user = data[0];
-            int movie = data[1];
-            int rating = data[3];
-            row(*this->U, user) -= grad_U(rating, user, movie);
-            row(*this->V, movie) -= grad_V(rating, user, movie);
-            a[user] -= grad_a(rating, user, movie);
-            b[movie] -= grad_b(rating, user, movie);
+            int user = x->at(i)[0];
+            int movie = x->at(i)[1];
+            int rating = x->at(i)[3];
+            grad_V(rating, user, movie);
+            grad_U(rating, user, movie);
+            grad_a(rating, user, movie);
+            grad_b(rating, user, movie);
             if (i % 3000000 == 0) {
                 fprintf(stderr, ".");
             }
@@ -139,4 +160,6 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
 SVD::~SVD() {
     delete this->a;
     delete this->b;
+    delete this->U;
+    delete this->V;
 }
