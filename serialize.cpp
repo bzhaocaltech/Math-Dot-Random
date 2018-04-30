@@ -15,7 +15,6 @@ void serialize(struct dataset* s, string file, bool to_free) {
 
   // First serialize the size of the dataset
   oa & s->size;
-  int num_lines = 0;
 
   // Then loop through and serialize each value of data
   for (int i = 0; i < s->size; i++) {
@@ -27,8 +26,7 @@ void serialize(struct dataset* s, string file, bool to_free) {
     oa & d.date;
     oa & d.rating;
 
-    num_lines++;
-    if (num_lines % 3000000 == 0) {
+    if (i % 3000000 == 0) {
       fprintf(stderr, ".");
     }
   }
@@ -53,11 +51,11 @@ struct dataset* unserialize(string file) {
 
   // Unserialize each data member
   for (int i = 0; i < size; i++) {
-    struct data d = dataset->data[i];
-    ia & d.user;
-    ia & d.movie;
-    ia & d.date;
-    ia & d.rating;
+    struct data* d = dataset->data + i;
+    ia & d->user;
+    ia & d->movie;
+    ia & d->date;
+    ia & d->rating;
 
     if (i % 3000000 == 0) {
       fprintf(stderr, ".");
