@@ -13,7 +13,7 @@ all: $(EXECUTABLES)
 load_data: $(LOAD_DATA_DEP)
 	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(LOAD_DATA_DEP) -o load_data $(BOOSTSERIALIZE)
 
-serialize.o: serialize.cpp serialize.hpp
+serialize.o: serialize.cpp serialize.hpp data.hpp
 	$(CXX) $(CXXFLAGS) -c serialize.cpp
 
 load_data.o: load_data.cpp

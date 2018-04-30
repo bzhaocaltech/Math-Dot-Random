@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+#include "data.hpp"
 
 using namespace std;
 
-/* Serializes a vector of int* each of length len to the given file */
-void serialize(std::vector<int*>* vec, string file, int len, bool to_free = true);
+/* Serializes a dataset to the given file
+ * The bool free determines whether or not the vector is freed at the end of
+ * serialization */
+void serialize(struct dataset* s, string file, bool to_free = true);
 
-/* Unserializes data into a vector of int* where each int* is of length len */
-std::vector<int*>* unserialize(string file, int len);
+/* Unserializes a serialized file into a dataset* */
+struct dataset* unserialize(string file);

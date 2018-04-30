@@ -39,11 +39,11 @@ class SVD : public Model {
 
         /* Given a list of x values in the form of (user, movie, time) predicts
             * the rating */
-        vector<float>* predict(vector<int*>* x);
+        vector<float>* predict(struct dataset* dataset);
 
         /* Given a list of x values in the form of (user, movie, time, rating)
          * fits the model */
-        void fit(vector<int*>* x, int epochs);
+        void fit(struct dataset* dataset, int epochs);
 
         /* Destructor for SVD */
         ~SVD();

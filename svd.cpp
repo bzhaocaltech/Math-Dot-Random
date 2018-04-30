@@ -85,12 +85,12 @@ void SVD::grad_b(int Yij, int i, int j) {
 
 /* Given a list of x values in the form of (user, movie, time) predicts
     * the rating */
-vector<float>* SVD::predict(std::vector<int*>* x) {
+vector<float>* SVD::predict(struct dataset* dataset) {
     vector<float>* predictions = new vector<float>();
-    for (unsigned int i = 0; i < x->size(); i++) {
-        int* data = x->at(i);
-        int user = data[0];
-        int movie = data[1];
+    for (int i = 0; i < dataset->size; i++) {
+        struct data data = dataset->data[i];
+        int user = data.user;
+        int movie = data.movie;
         float* Ui = this->U->row(user);
         float* Vj = this->V->row(movie);
         float p = dot_prod(Ui, Vj, this->latent_factors) + this->a[user]
@@ -102,17 +102,17 @@ vector<float>* SVD::predict(std::vector<int*>* x) {
 
 /* Given a list of x values in the form of (user, movie, time, rating)
  * fits the model */
-void SVD::fit(std::vector<int*>* x, int epochs) {
-    fprintf(stderr, "Fitting the data of size %i\n", (int) x->size());
+void SVD::fit(struct dataset* dataset, int epochs) {
+    fprintf(stderr, "Fitting the data of size %i\n", dataset->size);
 
     // Calculate the global bias
     this->mu = 0;
     fprintf(stderr, "Calculating the global bias\n");
-    for (unsigned int i = 0; i < x->size(); i++) {
-        int rating = x->at(i)[3];
+    for (int i = 0; i < dataset->size; i++) {
+        int rating = dataset->data[i].rating;
         this->mu += (double) rating;
     }
-    this->mu /= (double) x->size();
+    this->mu /= (double) dataset->size;
     fprintf(stderr, "Global bias was %f\n", this->mu);
 
     // Initialize U, V, a, b randomly
@@ -141,10 +141,11 @@ void SVD::fit(std::vector<int*>* x, int epochs) {
 
     for (int curr_epoch = 0; curr_epoch < epochs; curr_epoch++) {
         fprintf(stderr, "Running epoch %i", curr_epoch + 1);
-        for (unsigned int i = 0; i < x->size(); i++) {
-            int user = x->at(i)[0];
-            int movie = x->at(i)[1];
-            int rating = x->at(i)[3];
+        for (int i = 0; i < dataset->size; i++) {
+            struct data data = dataset->data[i];
+            int user = data.user;
+            int movie = data.movie;
+            int rating = data.rating;
             grad_V(rating, user, movie);
             grad_U(rating, user, movie);
             grad_a(rating, user, movie);
