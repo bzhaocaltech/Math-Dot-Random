@@ -75,7 +75,7 @@ int main() {
   serialize(mu_train, "data/mu_train.ser", 4);
   serialize(mu_valid, "data/mu_valid.ser", 4);
   serialize(mu_hidden, "data/mu_hidden.ser", 4);
-  serialize(mu_probe, "data/mu_probe.ser", 3);
+  serialize(mu_probe, "data/mu_probe.ser", 4);
   serialize(mu_qual, "data/mu_qual.ser", 3);
   fprintf(stderr, "\n");
 
@@ -122,7 +122,7 @@ int main() {
   serialize(um_train, "data/um_train.ser", 4);
   serialize(um_valid, "data/um_valid.ser", 4);
   serialize(um_hidden, "data/um_hidden.ser", 4);
-  serialize(um_probe, "data/um_probe.ser", 3);
+  serialize(um_probe, "data/um_probe.ser", 4);
   serialize(um_qual, "data/um_qual.ser", 3);
   fprintf(stderr, "\n");
 
