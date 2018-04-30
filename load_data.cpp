@@ -70,6 +70,12 @@ int main() {
   }
   fprintf(stderr, "\n");
 
+  fprintf(stderr, "Size of mu_train: %zu\n", mu_train->size());
+  fprintf(stderr, "Size of mu_valid: %zu\n", mu_valid->size());
+  fprintf(stderr, "Size of mu_hidden: %zu\n", mu_hidden->size());
+  fprintf(stderr, "Size of mu_probe: %zu\n", mu_probe->size());
+  fprintf(stderr, "Size of mu_qual: %zu\n", mu_qual->size());
+
   // Serialize the mu files
   fprintf(stderr, "Serializing mu files...");
   serialize(mu_train, "data/mu_train.ser", 4);
@@ -116,6 +122,13 @@ int main() {
     }
   }
   fprintf(stderr, "\n");
+
+
+  fprintf(stderr, "Size of um_train: %zu\n", um_train->size());
+  fprintf(stderr, "Size of um_valid: %zu\n", um_valid->size());
+  fprintf(stderr, "Size of um_hidden: %zu\n", um_hidden->size());
+  fprintf(stderr, "Size of um_probe: %zu\n", um_probe->size());
+  fprintf(stderr, "Size of um_qual: %zu\n", um_qual->size());
 
   // Serialize the um files
   fprintf(stderr, "Serializing um files...");
