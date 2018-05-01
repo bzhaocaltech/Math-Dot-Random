@@ -101,7 +101,7 @@ int main() {
   serialize(mu_qual, "data/mu_qual.ser");
   fprintf(stderr, "\n");
 
-  struct dataset* dataset = unserialize("data/mu_train.ser");
+  struct dataset* dataset = unserialize("data/mu_qual.ser");
   for (int i = 0; i < 10; i++) {
     fprintf(stderr, "User: %i, Movie: %i, Date: %i, Rating: %i \n",
     dataset->data[i].user, dataset->data[i].movie, dataset->data[i].date,
