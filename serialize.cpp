@@ -1,8 +1,8 @@
 #include "serialize.hpp"
 #include <fstream>
 #include <stdio.h>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 using namespace std;
 
@@ -11,7 +11,7 @@ using namespace std;
  * serialization */
 void serialize(struct dataset* s, string file, bool to_free) {
   ofstream ofs(file);
-  boost::archive::text_oarchive oa(ofs);
+  boost::archive::binary_oarchive oa(ofs);
 
   // First serialize the size of the dataset
   oa & s->size;
@@ -40,7 +40,7 @@ void serialize(struct dataset* s, string file, bool to_free) {
 struct dataset* unserialize(string file) {
   fprintf(stderr, "Unserializing %s", file.c_str());
   ifstream ifs(file);
-  boost::archive::text_iarchive ia(ifs);
+  boost::archive::binary_iarchive ia(ifs);
 
   // Grab size of dataset
   struct dataset* dataset = new struct dataset();

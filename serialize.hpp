@@ -6,7 +6,7 @@
 
 using namespace std;
 
-/* Serializes a dataset to the given file
+/* Serializes a dataset to the given file.
  * The bool free determines whether or not the vector is freed at the end of
  * serialization */
 void serialize(struct dataset* s, string file, bool to_free = true);

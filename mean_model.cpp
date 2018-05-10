@@ -1,6 +1,9 @@
 #include "mean_model.hpp"
 #include <stdlib.h>
 #include <stdio.h>
+#include <fstream>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 /* Constructor for the mean model. Takes the number of movies and number
  * of users which is by default set to the defines in model.hpp */
@@ -62,3 +65,6 @@ Mean_Model::~Mean_Model() {
   free(this->movie_means);
   free(this->user_means);
 }
+
+/* Serializes mean model. Bool to_free determines we free this model at the
+ * end of serialization */

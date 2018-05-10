@@ -1,5 +1,6 @@
 mu/
 um/
 data/
+models/
 *.o
 load_data
