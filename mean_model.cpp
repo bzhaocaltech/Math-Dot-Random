@@ -14,6 +14,50 @@ Mean_Model::Mean_Model(int num_of_movies, int num_of_users) {
   this->num_of_users = num_of_users;
 }
 
+/* Constructs a mean model from a serialized file */
+Mean_Model::Mean_Model(string file) {
+  fprintf(stderr, "Constructing mean model from %s", file.c_str());
+  ifstream ifs(file);
+  boost::archive::binary_iarchive ia(ifs);
+
+  // Unserialize num_of_movies and num_of_users
+  ia & num_of_movies;
+  ia & num_of_users;
+
+  // Unserialize movie_means
+  movie_means = (float*) malloc(sizeof(float) * num_of_movies);
+  for (int i = 0; i < num_of_movies; i++) {
+    ia & movie_means[i];
+  }
+
+  // Unserialize user_means
+  user_means = (float*) malloc(sizeof(float) * num_of_users);
+  for (int i = 0; i < num_of_users; i++) {
+    ia & user_means[i];
+  }
+}
+
+/* Serializes the mean_model into a given file */
+void serialize(string file) {
+  ofstream ofs(file);
+  boost::archive::binary_oarchive oa(ofs);
+
+  // Serialize parameters of model
+  oa & num_of_movies;
+  oa & num_of_users;
+
+  // Serialize movie_means
+  for (int i = 0; i < num_of_movies; i++) {
+    oa & movie_means[i];
+  }
+
+  // Unserialize user_means
+  for (int i = 0; i < num_of_users; i++) {
+    oa & user_means[i];
+  }
+}
+
+
 /* Given a list of x values in the form of (user, movie, time) predicts the
  * rating. Predicted rating of user i and movie j is
  * (user_means[i] + movie_means[i]) / 2 */
@@ -65,6 +109,3 @@ Mean_Model::~Mean_Model() {
   free(this->movie_means);
   free(this->user_means);
 }
-
-/* Serializes mean model. Bool to_free determines we free this model at the
- * end of serialization */

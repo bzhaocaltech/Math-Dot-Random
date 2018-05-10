@@ -2,6 +2,7 @@
  * predictions of this model are simply the average of the average. */
 
 #include "model.hpp"
+#include <string>
 
 class Mean_Model: public Model {
   private:
@@ -15,6 +16,12 @@ class Mean_Model: public Model {
     /* Constructor for the mean model. Takes the number of movies and number
      * of users which is by default set to the defines in model.hpp */
     Mean_Model(int num_of_movies = NUM_MOVIES, int num_of_users = NUM_USERS);
+
+    /* Constructs a mean model from a serialized file */
+    Mean_Model(string file);
+
+    /* Serializes the mean_model into a given file */
+    void serialize(string file);
 
     /* Given dataset returns vector containing predicted rating.
      * Predicted rating of user i and movie j is
