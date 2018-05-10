@@ -4,6 +4,9 @@
 
 #include <string>
 
+#include <vector>
+#include <mutex>
+
 using namespace std;
 
 class Matrix {
@@ -11,6 +14,7 @@ class Matrix {
     int num_rows;
     int num_cols;
     float* matrix;
+    std::vector<std::mutex*>* row_locks;
   public:
     /* Constructor class for matrix */
     Matrix(int num_rows, int num_cols);

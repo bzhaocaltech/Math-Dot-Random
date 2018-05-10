@@ -2,8 +2,7 @@
 
 #include "model.hpp"
 #include "matrix.hpp"
-
-using namespace std;
+#include "vector.hpp"
 
 class SVD : public Model {
     private:
@@ -13,9 +12,9 @@ class SVD : public Model {
         Matrix* U;
         Matrix* V;
         // The user biases
-        float* a;
+        Vector* a;
         // The movie biases
-        float* b;
+        Vector* b;
         // Num of latent factors
         int latent_factors;
         // Num of users and movies
@@ -28,12 +27,11 @@ class SVD : public Model {
         // Global bias
         double mu;
 
-        void grad_U(int Yij, int i, int j);
-        void grad_V(int Yij, int i, int j);
-        void grad_a(int Yij, int i, int j);
-        void grad_b(int Yij, int i, int j);
-
-        /* Serializes the model into a given file */
+        void grad_U(struct dataset* ds);
+        void grad_V(struct dataset* ds);
+        void grad_a(struct dataset* ds);
+        void grad_b(struct dataset* ds);
+  
     public:
         /* Constructor for SVD */
         SVD(int latent_factors, float eta, float reg, int num_users = NUM_USERS,
@@ -49,7 +47,7 @@ class SVD : public Model {
 
         /* Given a list of x values in the form of (user, movie, time) predicts
             * the rating */
-        vector<float>* predict(struct dataset* dataset);
+        std::vector<float>* predict(struct dataset* dataset);
 
         /* Given a list of x values in the form of (user, movie, time, rating)
          * fits the model */
