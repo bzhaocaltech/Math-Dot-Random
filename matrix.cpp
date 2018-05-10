@@ -1,5 +1,8 @@
 #include "matrix.hpp"
 #include <algorithm>
+#include <fstream>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 /* Constructor class for matrix */
 Matrix::Matrix(int num_rows, int num_cols) {
@@ -14,6 +17,43 @@ Matrix::Matrix(int num_rows, int num_cols) {
     );
 }
 
+/* Construct a matrix from a file */
+Matrix::Matrix(string file) {
+  ifstream ifs(file);
+  boost::archive::binary_iarchive ia(ifs);
+
+  /* Unserialize matrix parameters */
+  int num_rows, num_cols;
+  ia & num_rows;
+  ia & num_cols;
+  this->num_rows = num_rows;
+  this->num_cols = num_cols;
+
+  /* Unserialize data values */
+  this->matrix = new float[num_rows * num_cols];
+  for (int i = 0; i < num_rows; i++) {
+    for (int j = 0; j < num_cols; j++) {
+      int new_num;
+      ia & new_num;
+      this->set_val(i, j, new_num);
+    }
+  }
+};
+
+/* Serializes a matrix to a file */
+void Matrix::serialize(string file) {
+  ofstream ofs(file);
+  boost::archive::binary_oarchive oa(ofs);
+
+  oa & this->num_rows;
+  oa & this->num_cols;
+  for (int i = 0; i < this->num_rows; i++) {
+    for (int j = 0; j < this->num_cols; j++) {
+      oa & this->get_val(i, j);
+    }
+  }
+};
+
 /* Returns a pointer to the beginning of a particular row of the matrix */
 float* Matrix::row(int row) {
     return this->matrix + (row * this->num_cols);
@@ -27,6 +67,16 @@ int Matrix::get_val(int row, int col) {
 /* Sets the value of a particular element of the matrix */
 void Matrix::set_val(int row, int col, float val) {
     this->matrix[row * this->num_cols + col] = val;
+}
+
+/* Returns number of rows */
+int Matrix::get_num_rows(void) {
+  return num_rows;
+}
+
+/* Returns number of cols */
+int Matrix::get_num_cols(void) {
+  return num_cols;
 }
 
 /* Multiplies this matrix by a scalar */

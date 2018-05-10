@@ -1,6 +1,9 @@
 #include "mean_model.hpp"
 #include <stdlib.h>
 #include <stdio.h>
+#include <fstream>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 /* Constructor for the mean model. Takes the number of movies and number
  * of users which is by default set to the defines in model.hpp */
@@ -10,6 +13,52 @@ Mean_Model::Mean_Model(int num_of_movies, int num_of_users) {
   this->num_of_movies = num_of_movies;
   this->num_of_users = num_of_users;
 }
+
+/* Constructs a mean model from a serialized file */
+Mean_Model::Mean_Model(string file) {
+  fprintf(stderr, "Constructing mean model from %s\n", file.c_str());
+  ifstream ifs(file);
+  boost::archive::binary_iarchive ia(ifs);
+
+  // Unserialize num_of_movies and num_of_users
+  ia & num_of_movies;
+  ia & num_of_users;
+
+  // Unserialize movie_means
+  movie_means = (float*) malloc(sizeof(float) * num_of_movies);
+  for (int i = 0; i < num_of_movies; i++) {
+    ia & movie_means[i];
+  }
+
+  // Unserialize user_means
+  user_means = (float*) malloc(sizeof(float) * num_of_users);
+  for (int i = 0; i < num_of_users; i++) {
+    ia & user_means[i];
+  }
+}
+
+/* Serializes the mean_model into a given file */
+void Mean_Model::serialize(string file) {
+  fprintf(stderr, "Serializing Mean_Model to %s \n", file.c_str());
+
+  ofstream ofs(file);
+  boost::archive::binary_oarchive oa(ofs);
+
+  // Serialize parameters of model
+  oa & num_of_movies;
+  oa & num_of_users;
+
+  // Serialize movie_means
+  for (int i = 0; i < num_of_movies; i++) {
+    oa & movie_means[i];
+  }
+
+  // Unserialize user_means
+  for (int i = 0; i < num_of_users; i++) {
+    oa & user_means[i];
+  }
+}
+
 
 /* Given a list of x values in the form of (user, movie, time) predicts the
  * rating. Predicted rating of user i and movie j is

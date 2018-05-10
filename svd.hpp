@@ -31,10 +31,19 @@ class SVD : public Model {
         void grad_V(struct dataset* ds);
         void grad_a(struct dataset* ds);
         void grad_b(struct dataset* ds);
+  
     public:
         /* Constructor for SVD */
         SVD(int latent_factors, float eta, float reg, int num_users = NUM_USERS,
             int num_movies = NUM_MOVIES);
+
+        /* Constructs a SVD from a file
+         * NOTE: Please remeber the .ser file extension */
+        SVD(string file);
+
+        /* Serializes the model into a given file
+         * NOTE: Please remeber the .ser file extension */
+        void serialize(string file);
 
         /* Given a list of x values in the form of (user, movie, time) predicts
             * the rating */

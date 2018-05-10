@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <thread>
+#include <fstream>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 /* Constructor for SVD */
 SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies) {
@@ -18,6 +21,62 @@ SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies
     this->num_users = num_users;
     printf("Creating SVD with %i latent factors, learning rate %f, and reg %f \n",
           this->latent_factors, this->eta, this->reg);
+}
+
+/* Constructs a SVD from a file */
+SVD::SVD(string file) {
+    fprintf(stderr, "Unserializing SVD from %s \n", file.c_str());
+    ifstream ifs(file);
+    boost::archive::binary_iarchive ia(ifs);
+
+    /* Unserialize the parameters of this SVD */
+    ia & latent_factors;
+    ia & eta;
+    ia & reg;
+    ia & num_movies;
+    ia & num_users;
+    ia & mu;
+
+    /* Unserialize the U and V matrices */
+    U = new Matrix(file.substr(0, file.length() - 4) + "_U_matrix.ser");
+    V = new Matrix(file.substr(0, file.length() - 4) + "_V_matrix.ser");
+
+    /* Unserialize a and b */
+    a = new float[num_users];
+    for (int i = 0; i < num_users; i++) {
+        ia & a[i];
+    }
+    b = new float[num_movies];
+    for (int i = 0; i < num_movies; i++) {
+        ia & b[i];
+    }
+}
+
+/* Serializes the model into a given file  */
+void SVD::serialize(string file) {
+    fprintf(stderr, "Serializing SVD to %s \n", file.c_str());
+    ofstream ofs(file);
+    boost::archive::binary_oarchive oa(ofs);
+
+    /* Serialize parameters of this SVD */
+    oa & latent_factors;
+    oa & eta;
+    oa & reg;
+    oa & num_movies;
+    oa & num_users;
+    oa & mu;
+
+    /* Serialize the U and V matrices */
+    U->serialize(file.substr(0, file.length() - 4) + "_U_matrix.ser");
+    V->serialize(file.substr(0, file.length() - 4) + "_V_matrix.ser");
+
+    /* Serialize a and b */
+    for (int i = 0; i < num_users; i++) {
+        oa & a[i];
+    }
+    for (int i = 0; i < num_movies; i++) {
+        oa & b[i];
+    }
 }
 
 /* Takes as input the actual rating for the ith user and the jth movie.
@@ -139,6 +198,7 @@ void SVD::fit(struct dataset* dataset, int epochs) {
     this->mu /= (double) dataset->size;
     fprintf(stderr, "Global bias was %f\n", this->mu);
 
+    fprintf(stderr, "Running %i epochs\n", epochs);
     // Initialize U, V, a, b randomly
     fprintf(stderr, "Randomly initializing matrices\n");
     for (int i = 0; i < this->num_users; i++) {
