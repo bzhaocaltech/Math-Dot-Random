@@ -16,7 +16,7 @@ Mean_Model::Mean_Model(int num_of_movies, int num_of_users) {
 
 /* Constructs a mean model from a serialized file */
 Mean_Model::Mean_Model(string file) {
-  fprintf(stderr, "Constructing mean model from %s", file.c_str());
+  fprintf(stderr, "Constructing mean model from %s\n", file.c_str());
   ifstream ifs(file);
   boost::archive::binary_iarchive ia(ifs);
 
@@ -38,7 +38,7 @@ Mean_Model::Mean_Model(string file) {
 }
 
 /* Serializes the mean_model into a given file */
-void serialize(string file) {
+void Mean_Model::serialize(string file) {
   ofstream ofs(file);
   boost::archive::binary_oarchive oa(ofs);
 
