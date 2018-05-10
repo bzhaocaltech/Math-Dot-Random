@@ -32,5 +32,8 @@ int main() {
   delete x_test;
   delete predictions;
 
+  // Serialize the mean model
+  model->serialize("models/mean_model.ser");
+
   return 0;
 }

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG
+CXXFLAGS = -std=c++14 -Wall -g -O3 -DNDEBUG -DBOOST_UBLAS_NDEBUG
 BOOSTROOT = -L/usr/local/lib -static
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
