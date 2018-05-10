@@ -34,6 +34,6 @@ int main() {
 
   // Serialize the mean model
   model->serialize("models/mean_model.ser");
-  
+
   return 0;
 }

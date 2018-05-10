@@ -1,4 +1,7 @@
 #include "matrix.hpp"
+#include <fstream>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 
 /* Constructor class for matrix */
 Matrix::Matrix(int num_rows, int num_cols) {
@@ -7,8 +10,11 @@ Matrix::Matrix(int num_rows, int num_cols) {
   this->matrix = new float[num_rows * num_cols];
 }
 
-/* Construct a matrix from a boost binary_iarchive */
-Matrix::Matrix(boost::archive::binary_iarchive ia) {
+/* Construct a matrix from a file */
+Matrix::Matrix(string file) {
+  ifstream ifs(file);
+  boost::archive::binary_iarchive ia(ifs);
+
   /* Unserialize matrix parameters */
   int num_rows, num_cols;
   ia & num_rows;
@@ -27,8 +33,11 @@ Matrix::Matrix(boost::archive::binary_iarchive ia) {
   }
 };
 
-/* Serializes a matrix to a given file. */
-void Matrix::serialize(boost::archive::binary_oarchive oa) {
+/* Serializes a matrix to a file */
+void Matrix::serialize(string file) {
+  ofstream ofs(file);
+  boost::archive::binary_oarchive oa(ofs);
+
   oa & this->num_rows;
   oa & this->num_cols;
   for (int i = 0; i < this->num_rows; i++) {

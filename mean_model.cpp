@@ -39,6 +39,8 @@ Mean_Model::Mean_Model(string file) {
 
 /* Serializes the mean_model into a given file */
 void Mean_Model::serialize(string file) {
+  fprintf(stderr, "Serializing Mean_Model to %s \n", file.c_str());
+
   ofstream ofs(file);
   boost::archive::binary_oarchive oa(ofs);
 

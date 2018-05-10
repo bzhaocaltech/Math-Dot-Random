@@ -1,5 +1,6 @@
 /* The model class from which all other models inherit from */
 #include <vector>
+#include <string>
 #include "data.hpp"
 
 using namespace std;
@@ -12,6 +13,9 @@ class Model {
   public:
     /* Given dataset returns vector containing predicted rating */
     virtual vector<float>* predict(struct dataset* x) = 0;
+
+    /* Serializes the model into a given file */
+    virtual void serialize(string file) = 0;
 
     /* Uses an some measure to return the error incurred by a predicted rating.
      * Uses squared error by default unless overloaded by a child class. */

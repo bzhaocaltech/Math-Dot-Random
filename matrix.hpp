@@ -2,8 +2,7 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <string>
 
 using namespace std;
 
@@ -16,8 +15,8 @@ class Matrix {
     /* Constructor class for matrix */
     Matrix(int num_rows, int num_cols);
 
-    /* Construct a matrix from a boost binary_iarchive */
-    Matrix(boost::archive::binary_iarchive ia);
+    /* Construct a matrix from a file */
+    Matrix(string file);
 
     /* Returns a pointer to the beginning of a particular row of the matrix */
     float* row(int row);
@@ -40,8 +39,8 @@ class Matrix {
     /* Updates with a matrix row pointed to by new_row. Frees new_row afterwards. */
     void update_row(int row, float* new_row);
 
-    /* Serializes a matrix to a boost binary_oarchive */
-    void serialize(boost::archive::binary_oarchive oa);
+    /* Serializes a matrix to a file */
+    void serialize(string file);
 
     /* Destructor for matrix */
     ~Matrix();
