@@ -1,5 +1,8 @@
 /* Simple class for matrix operations. Also contains a lot of vector operations */
 
+#include <vector>
+#include <mutex>
+
 using namespace std;
 
 class Matrix {
@@ -7,6 +10,7 @@ class Matrix {
     int num_rows;
     int num_cols;
     float* matrix;
+    std::vector<std::mutex*>* row_locks;
   public:
     /* Constructor class for matrix */
     Matrix(int num_rows, int num_cols);

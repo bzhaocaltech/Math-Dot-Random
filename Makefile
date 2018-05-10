@@ -1,12 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG
-BOOSTROOT = -L/usr/local/lib -static
+CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG -pthread -O3
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
 EXECUTABLES = load_data model_1 model_2
 LOAD_DATA_DEP = load_data.o serialize.o
 MODEL_1_DEP = mean_model.o serialize.o model_1.o model.o output.o
-MODEL_2_DEP = matrix.o svd.o model_2.o model.o serialize.o output.o
+MODEL_2_DEP = matrix.o vector.o svd.o model_2.o model.o serialize.o output.o
 
 all: $(EXECUTABLES)
 
@@ -35,10 +34,10 @@ matrix.o: matrix.cpp matrix.hpp
 	$(CXX) $(CXXFLAGS) -c matrix.cpp
 
 model_1: $(MODEL_1_DEP)
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)
+	$(CXX) $(CXXFLAGS) $(MODEL_1_DEP) -o model_1 $(BOOSTSERIALIZE)
 
 model_2: $(MODEL_2_DEP)
-	$(CXX) $(CXXFLAGS) $(BOOSTROOT) $(MODEL_2_DEP) -o model_2 $(BOOSTSERIALIZE)
+	$(CXX) $(CXXFLAGS) $(MODEL_2_DEP) -o model_2 $(BOOSTSERIALIZE)
 
 clean:
 	$(RM) $(EXECUTABLES) *.o results.dta

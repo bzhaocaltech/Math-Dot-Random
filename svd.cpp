@@ -3,13 +3,14 @@
 #include "svd.hpp"
 #include <stdlib.h>
 #include <stdio.h>
+#include <thread>
 
 /* Constructor for SVD */
 SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies) {
     this->U = new Matrix(num_users, latent_factors);
     this->V = new Matrix(num_movies, latent_factors);
-    this->a = new float[num_users];
-    this->b = new float[num_movies];
+    this->a = new Vector(num_users);
+    this->b = new Vector(num_movies);
     this->latent_factors = latent_factors;
     this->eta = eta;
     this->reg = reg;
@@ -22,65 +23,88 @@ SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies
 /* Takes as input the actual rating for the ith user and the jth movie.
  * Returns the gradient of the regularized loss function with respect to
  * Ui multiplied by eta */
-void SVD::grad_U(int Yij, int i, int j) {
-    float* Ui = this->U->row(i);
-    float* Vj = this->V->row(j);
-    float* temp1 = scalar_vec_prod(this->reg, Ui, this->latent_factors);
-    float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
-                      - this->a[i] - this->b[j];
-    float* temp3 = scalar_vec_prod(temp2, Vj, this->latent_factors);
-    float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
-    delete temp1;
-    delete temp3;
-    float* grad_u = scalar_vec_prod(this->eta, temp4, this->latent_factors);
-    delete temp4;
-    float* new_u = vec_sub(Ui, grad_u, this->latent_factors);
-    delete grad_u;
-    this->U->update_row(i, new_u);
+void SVD::grad_U(struct dataset* ds) {
+    for (int n = 0; n < ds->size; n++) {
+        int Yij = ds->data[n].rating;
+        int i = ds->data[n].user;
+        int j = ds->data[n].movie;
+        float* Ui = this->U->row(i);
+        float* Vj = this->V->row(j);
+        float* temp1 = scalar_vec_prod(this->reg, Ui, this->latent_factors);
+        float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+        - this->a->at(i) - this->b->at(j);
+        float* temp3 = scalar_vec_prod(temp2, Vj, this->latent_factors);
+        float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
+        delete temp1;
+        delete temp3;
+        float* grad_u = scalar_vec_prod(this->eta, temp4, this->latent_factors);
+        delete temp4;
+        float* new_u = vec_sub(Ui, grad_u, this->latent_factors);
+        delete grad_u;
+        this->U->update_row(i, new_u);
+        if (n % 3000000 == 0) {
+            fprintf(stderr, ".");
+        }
+    }
 }
 
 /* Takes as input the actual rating for the ith user and the jth movie.
  * Returns the gradient of the regularized loss function with respect to
  * Vj multiplied by eta */
-void SVD::grad_V(int Yij, int i, int j) {
-    float* Ui = this->U->row(i);
-    float* Vj = this->V->row(j);
-    float* temp1 = scalar_vec_prod(this->reg, Vj, this->latent_factors);
-    float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
-                      - this->a[i] - this->b[j];
-    float* temp3 = scalar_vec_prod(temp2, Ui, this->latent_factors);
-    float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
-    delete temp1;
-    delete temp3;
-    float* grad_v = scalar_vec_prod(this->eta, temp4, this->latent_factors);
-    delete temp4;
-    float* new_v = vec_sub(Vj, grad_v, this->latent_factors);
-    delete grad_v;
-    this->V->update_row(j, new_v);
+void SVD::grad_V(struct dataset* ds) {
+    for (int n = 0; n < ds->size; n++) {
+        int Yij = ds->data[n].rating;
+        int i = ds->data[n].user;
+        int j = ds->data[n].movie;
+        float* Ui = this->U->row(i);
+        float* Vj = this->V->row(j);
+        float* temp1 = scalar_vec_prod(this->reg, Vj, this->latent_factors);
+        float temp2 = ((float) Yij) - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                          - this->a->at(i) - this->b->at(j);
+        float* temp3 = scalar_vec_prod(temp2, Ui, this->latent_factors);
+        float* temp4 = vec_sub(temp1, temp3, this->latent_factors);
+        delete temp1;
+        delete temp3;
+        float* grad_v = scalar_vec_prod(this->eta, temp4, this->latent_factors);
+        delete temp4;
+        float* new_v = vec_sub(Vj, grad_v, this->latent_factors);
+        delete grad_v;
+        this->V->update_row(j, new_v);
+    }
 }
 
 /* Same input as other grad functions. Returns the graident of the regularized
  * loss function with respect to ai multiplied by eta. */
-void SVD::grad_a(int Yij, int i, int j) {
-    float* Ui = this->U->row(i);
-    float* Vj = this->V->row(j);
-    float temp1 = this->reg * this->a[i];
-    float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
-                  - this->a[i] - this->b[j];
-    float value = this->eta * (temp1 - temp2);
-    a[i] -= value;
+void SVD::grad_a(struct dataset* ds) {
+    for (int n = 0; n < ds->size; n++) {
+        int Yij = ds->data[n].rating;
+        int i = ds->data[n].user;
+        int j = ds->data[n].movie;
+        float* Ui = this->U->row(i);
+        float* Vj = this->V->row(j);
+        float temp1 = this->reg * this->a->at(i);
+        float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                      - this->a->at(i) - this->b->at(j);
+        float value = this->eta * (temp1 - temp2);
+        this->a->update_element(i, this->a->at(i) - value);
+    }
 }
 
 /* Same input as other grad functions. Returns the graident of the regularized
  * loss function with respect to bj multiplied by eta. */
-void SVD::grad_b(int Yij, int i, int j) {
-    float* Ui = this->U->row(i);
-    float* Vj = this->V->row(j);
-    float temp1 = this->reg * this->b[j];
-    float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
-                  - this->a[i] - this->b[j];
-    float value = this->eta * (temp1 - temp2);
-    b[j] -= value;
+void SVD::grad_b(struct dataset* ds) {
+    for (int n = 0; n < ds->size; n++) {
+        int Yij = ds->data[n].rating;
+        int i = ds->data[n].user;
+        int j = ds->data[n].movie;
+        float* Ui = this->U->row(i);
+        float* Vj = this->V->row(j);
+        float temp1 = this->reg * this->b->at(j);
+        float temp2 = Yij - this->mu - dot_prod(Ui, Vj, this->latent_factors)
+                      - this->a->at(i) - this->b->at(j);
+        float value = this->eta * (temp1 - temp2);
+        this->b->update_element(j, this->b->at(j) - value);
+    }
 }
 
 /* Given a list of x values in the form of (user, movie, time) predicts
@@ -93,8 +117,8 @@ vector<float>* SVD::predict(struct dataset* dataset) {
         int movie = data.movie;
         float* Ui = this->U->row(user);
         float* Vj = this->V->row(movie);
-        float p = dot_prod(Ui, Vj, this->latent_factors) + this->a[user]
-                  + this->b[movie] + this->mu;
+        float p = dot_prod(Ui, Vj, this->latent_factors) + this->a->at(user)
+                  + this->b->at(movie) + this->mu;
         predictions->push_back(p);
     }
     return predictions;
@@ -131,29 +155,39 @@ void SVD::fit(struct dataset* dataset, int epochs) {
     }
     for (int i = 0; i < this->num_users; i++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
-        this->a[i] = random;
+        this->a->update_element(i, random);
     }
     for (int j = 0; j < this->num_movies; j++) {
         float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
-        this->b[j] = random;
+        this->b->update_element(j, random);
     }
     fprintf(stderr, "Matrices randomly initialized\n");
 
     for (int curr_epoch = 0; curr_epoch < epochs; curr_epoch++) {
         fprintf(stderr, "Running epoch %i", curr_epoch + 1);
-        for (int i = 0; i < dataset->size; i++) {
-            struct data data = dataset->data[i];
-            int user = data.user;
-            int movie = data.movie;
-            int rating = data.rating;
-            grad_V(rating, user, movie);
-            grad_U(rating, user, movie);
-            grad_a(rating, user, movie);
-            grad_b(rating, user, movie);
-            if (i % 3000000 == 0) {
-                fprintf(stderr, ".");
-            }
-        }
+        // for (int i = 0; i < dataset->size; i++) {
+        //     struct data data = dataset->data[i];
+        //     int user = data.user;
+        //     int movie = data.movie;
+        //     int rating = data.rating;
+        //     grad_V(rating, user, movie);
+        //     grad_U(rating, user, movie);
+        //     grad_a(rating, user, movie);
+        //     grad_b(rating, user, movie);
+        //     if (i % 3000000 == 0) {
+        //         fprintf(stderr, ".");
+        //     }
+        // }
+        std::thread u_thread (&SVD::grad_U, this, dataset);
+        std::thread v_thread (&SVD::grad_V, this, dataset);
+        std::thread a_thread (&SVD::grad_a, this, dataset);
+        std::thread b_thread (&SVD::grad_b, this, dataset);
+
+        u_thread.join();
+        v_thread.join();
+        a_thread.join();
+        b_thread.join();
+
         fprintf(stderr, "\n");
     }
 }
