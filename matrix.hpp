@@ -26,6 +26,12 @@ class Matrix {
     /* Updates with a matrix row pointed to by new_row. Frees new_row afterwards. */
     void update_row(int row, float* new_row);
 
+    /* Returns transpose of matrix. */
+    Matrix get_transpose();
+
+    /* Multiplies two matrices. */
+    void mat_mul(Matrix b, Matrix answer);
+
     /* Destructor for matrix */
     ~Matrix();
 };
