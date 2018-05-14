@@ -38,6 +38,14 @@ Matrix::Matrix(string file) {
       this->set_val(i, j, new_num);
     }
   }
+
+  /* Create row locks */
+  this->row_locks = new std::vector<std::mutex*>(num_rows);
+  std::generate (this->row_locks->begin(), this->row_locks->end(),
+      [] () {
+          return new std::mutex();
+      }
+  );
 };
 
 /* Serializes a matrix to a file */

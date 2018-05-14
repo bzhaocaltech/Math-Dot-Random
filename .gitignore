@@ -4,3 +4,5 @@ data/
 models/
 *.o
 load_data
+run_svd
+run_mean_model

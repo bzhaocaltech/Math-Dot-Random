@@ -13,6 +13,20 @@ Vector::Vector(int length) {
     );
 }
 
+Vector::Vector(int length, float* vector) {
+    this->vector = vector;
+    this->vector_locks = new std::vector<std::mutex*>(length);
+    std::generate (this->vector_locks->begin(), this->vector_locks->end(),
+        [] () {
+            return new std::mutex();
+        }
+    );
+}
+
+float* Vector::get_vector() {
+    return this->vector;
+}
+
 void Vector::update_element(int idx, float val) {
     this->vector_locks->at(idx)->lock();
     this->vector[idx] = val;

@@ -42,14 +42,16 @@ SVD::SVD(string file) {
     V = new Matrix(file.substr(0, file.length() - 4) + "_V_matrix.ser");
 
     /* Unserialize a and b */
-    a = new float[num_users];
+    float* a_float = new float[num_users];
     for (int i = 0; i < num_users; i++) {
-        ia & a[i];
+        ia & a_float[i];
     }
-    b = new float[num_movies];
+    this->a = new Vector(num_users, a_float);
+    float* b_float = new float[num_movies];
     for (int i = 0; i < num_movies; i++) {
-        ia & b[i];
+        ia & b_float[i];
     }
+    this->b = new Vector(num_movies, b_float);
 }
 
 /* Serializes the model into a given file  */
@@ -71,11 +73,13 @@ void SVD::serialize(string file) {
     V->serialize(file.substr(0, file.length() - 4) + "_V_matrix.ser");
 
     /* Serialize a and b */
+    float* vec_a = this->a->get_vector();
     for (int i = 0; i < num_users; i++) {
-        oa & a[i];
+        oa & vec_a[i];
     }
+    float* vec_b = this->b->get_vector();
     for (int i = 0; i < num_movies; i++) {
-        oa & b[i];
+        oa & vec_b[i];
     }
 }
 
