@@ -23,3 +23,20 @@ using namespace std;
 float Model::error(float predicted_rating, int actual_rating) {
   return pow((predicted_rating - (float) actual_rating), 2);
 }
+
+struct dataset** split_dataset(struct dataset* dataset, int num_splits) {
+  int curr_index = 0;
+  struct dataset** to_return = new struct dataset*[num_splits];
+  for (int i = 0; i < num_splits; i++) {
+    int new_index = dataset->size * ((float) (i + 1) / (float) num_splits);
+    if (i == num_splits - 1) {
+      new_index = dataset->size;
+    }
+    struct dataset* split_dataset = new struct dataset();
+    split_dataset->size = new_index - curr_index;
+    split_dataset->data = &(dataset->data[curr_index]);
+    to_return[i] = split_dataset;
+    curr_index = new_index;
+  }
+  return to_return;
+}

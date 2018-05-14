@@ -24,3 +24,6 @@ class Model {
     /* Returns the mean error for a set. Lower score is better. */
     float score(struct dataset* dataset);
 };
+
+/* Function for splits the dataset into equal sized pieces */
+struct dataset** split_dataset(struct dataset* dataset, int num_splits);

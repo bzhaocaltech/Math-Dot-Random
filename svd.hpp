@@ -27,11 +27,13 @@ class SVD : public Model {
         // Global bias
         double mu;
 
-        void grad_U(struct dataset* ds);
-        void grad_V(struct dataset* ds);
-        void grad_a(struct dataset* ds);
-        void grad_b(struct dataset* ds);
-  
+        /* Run a gradient on part of the dataset */
+        void grad_part(struct dataset* ds, bool track_progress);
+        void grad_U(struct data d);
+        void grad_V(struct data d);
+        void grad_a(struct data d);
+        void grad_b(struct data d);
+
     public:
         /* Constructor for SVD */
         SVD(int latent_factors, float eta, float reg, int num_users = NUM_USERS,
@@ -51,7 +53,7 @@ class SVD : public Model {
 
         /* Given a list of x values in the form of (user, movie, time, rating)
          * fits the model */
-        void fit(struct dataset* dataset, int epochs);
+        void fit(struct dataset* dataset, int epochs, int num_threads = 8);
 
         /* Destructor for SVD */
         ~SVD();
