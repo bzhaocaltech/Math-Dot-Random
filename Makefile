@@ -2,10 +2,11 @@ CXX = g++
 CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG -pthread -O3
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
-EXECUTABLES = load_data run_mean_model run_svd
+EXECUTABLES = load_data run_mean_model run_svd run_svdpp
 LOAD_DATA_DEP = load_data.o serialize.o
 MEAN_MODEL_DEP = mean_model.o serialize.o run_mean_model.o model.o output.o
 SVD_DEP = matrix.o vector.o svd.o run_svd.o model.o serialize.o output.o
+SVDPP_DEP = matrix.o vector.o svd.o serialize.o output.o model.o svdpp.o run_svdpp.o
 
 all: $(EXECUTABLES)
 
@@ -30,6 +31,9 @@ mean_model.o: model.o mean_model.cpp mean_model.hpp
 svd.o: model.o svd.cpp svd.hpp
 	$(CXX) $(CXXFLAGS) -c svd.cpp
 
+svdpp.o: svd.o svdpp.cpp svdpp.hpp
+	$(CXX) $(CXXFLAGS) -c svdpp.cpp
+
 matrix.o: matrix.cpp matrix.hpp
 	$(CXX) $(CXXFLAGS) -c matrix.cpp
 
@@ -38,6 +42,9 @@ run_mean_model: $(MEAN_MODEL_DEP)
 
 run_svd: $(SVD_DEP)
 	$(CXX) $(CXXFLAGS) $(SVD_DEP) -o run_svd $(BOOSTSERIALIZE)
+
+run_svdpp: $(SVDPP_DEP)
+	$(CXX) $(CXXFLAGS) $(SVDPP_DEP) -o run_svdpp $(BOOSTSERIALIZE)
 
 clean:
 	$(RM) $(EXECUTABLES) *.o results.dta

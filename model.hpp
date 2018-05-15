@@ -1,4 +1,7 @@
 /* The model class from which all other models inherit from */
+#ifndef MODEL_HPP
+#define MODEL_HPP
+
 #include <vector>
 #include <string>
 #include "data.hpp"
@@ -27,3 +30,5 @@ class Model {
 
 /* Function for splits the dataset into equal sized pieces */
 struct dataset** split_dataset(struct dataset* dataset, int num_splits);
+
+#endif

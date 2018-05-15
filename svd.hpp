@@ -5,7 +5,7 @@
 #include "vector.hpp"
 
 class SVD : public Model {
-    private:
+    protected:
         /* The two matrices of latent factors
             * U is a num_users * latent_factors
             * V is a num_movies * latent_factors */
@@ -53,7 +53,7 @@ class SVD : public Model {
 
         /* Given a list of x values in the form of (user, movie, time, rating)
          * fits the model */
-        void fit(struct dataset* dataset, int epochs, int num_threads = 8);
+        void fit(struct dataset* dataset, int epochs, int num_threads = 10);
 
         /* Destructor for SVD */
         ~SVD();

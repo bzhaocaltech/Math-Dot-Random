@@ -253,30 +253,6 @@ void SVD::fit(struct dataset* dataset, int epochs, int num_threads) {
             threads[i].join();
         }
 
-
-        // for (int i = 0; i < dataset->size; i++) {
-        //     struct data data = dataset->data[i];
-        //     int user = data.user;
-        //     int movie = data.movie;
-        //     int rating = data.rating;
-        //     grad_V(rating, user, movie);
-        //     grad_U(rating, user, movie);
-        //     grad_a(rating, user, movie);
-        //     grad_b(rating, user, movie);
-        //     if (i % 3000000 == 0) {
-        //         fprintf(stderr, ".");
-        //     }
-        // }
-        // std::thread u_thread (&SVD::grad_U, this, dataset);
-        // std::thread v_thread (&SVD::grad_V, this, dataset);
-        // std::thread a_thread (&SVD::grad_a, this, dataset);
-        // std::thread b_thread (&SVD::grad_b, this, dataset);
-        //
-        // u_thread.join();
-        // v_thread.join();
-        // a_thread.join();
-        // b_thread.join();
-
         fprintf(stderr, "\n");
     }
 }

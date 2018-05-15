@@ -8,7 +8,7 @@
 
 int main(int argc, char *argv[]) {
   if (argc != 5) {
-    printf("USAGE: ./model_2 #latent_factors eta regularization #epochs\n");
+    printf("USAGE: ./run_svd #latent_factors eta regularization #epochs\n");
     exit(1);
   }
   // Get command line arguments

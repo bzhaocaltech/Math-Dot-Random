@@ -128,6 +128,15 @@ float* vec_sub(float* vec1, float* vec2, int length) {
     return new_vec;
 }
 
+/* Adds vec2 to vec1. */
+float* vec_add(float* vec1, float* vec2, int length) {
+    float* new_vec = new float[length];
+    for (int i = 0; i < length; i++) {
+        new_vec[i] = vec1[i] + vec2[i];
+    }
+    return new_vec;
+}
+
 /* Multiplies a vector by a scalar. Returns a new float* */
 float* scalar_vec_prod(float scalar, float* vec1, int length) {
     float* vec2 = new float[length];

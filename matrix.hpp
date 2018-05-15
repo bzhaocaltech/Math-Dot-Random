@@ -56,6 +56,9 @@ float dot_prod(float* vec1, float* vec2, int length);
 /* Subtracts vec2 from vec1. */
 float* vec_sub(float* vec1, float* vec2, int length);
 
+/* Adds vec2 to vec1. */
+float* vec_add(float* vec1, float* vec2, int length);
+
 /* Multiplies a vector by a scalar. Returns a new float* */
 float* scalar_vec_prod(float scalar, float* vec1, int length);
 
