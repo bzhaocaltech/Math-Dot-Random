@@ -69,9 +69,10 @@ float* SVDPP::get_f_factor(int user) {
   }
   for (unsigned int j = 0; j < Ni->size(); j++) {
     int movie_watched = Ni->at(j);
-    float* temp = vec_add(sum_n, y->row(movie_watched), this->latent_factors);
-    delete sum_n;
-    sum_n = temp;
+    float* yj = this->y->row(movie_watched);
+    for (int i = 0; i < this->latent_factors; i++) {
+      sum_n[i] += yj[i];
+    }
   }
   // Multiply n * sum_n to get |N(u)|^(-0.5) * sum_(j \in N) y(j)
   float* f_factor = scalar_vec_prod(n, sum_n, this->latent_factors);
@@ -185,14 +186,11 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
     int user = data.user;
     for (unsigned int u = 0; u < this->N[user]->size(); u++) {
       int movie_watched = this->N[user]->at(u);
-      // TODO: This is only here to reduce runtime
+      // TODO: The if statement is only here to reduce runtime
       if (movie_watched == data.movie) {
-        this->grad_y(data, movie_watched, error);
+      this->grad_y(data, movie_watched, error);
       }
     }
-    // if (track_progress) {
-    //   fprintf(stderr, "%d\n", (int) this->N[user]->size());
-    // }
     if ((n % dot_break == 0) && track_progress) {
       fprintf(stderr, ".");
     }
@@ -283,5 +281,9 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
 }
 
 SVDPP::~SVDPP() {
+  for (int i = 0; i < num_users; i++) {
+    delete this->N[i];
+  }
+  delete this->N;
   delete this->y;
 }

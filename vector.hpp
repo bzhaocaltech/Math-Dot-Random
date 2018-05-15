@@ -8,7 +8,9 @@ private:
     // the actual data
     float* vector;
     // locks to keep vector implementation thread safe
-    std::vector<std::mutex*>* vector_locks;
+    std::mutex** vector_locks;
+    // length of the vector
+    int length;
 public:
     // constructor to create a empty Vector object
     Vector(int length);

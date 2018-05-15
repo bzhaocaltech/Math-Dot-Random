@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
   // string file_name = string("models/svd_") + argv[1] + "_" + argv[2] + "_" + argv[3]
   // + "_" + argv[4] + ".ser";
 
-  struct dataset* x_train = unserialize("data/um_valid.ser");
+  struct dataset* x_train = unserialize("data/um_train.ser");
   struct dataset* x_valid = unserialize("data/um_valid.ser");
 
   SVDPP* svdpp = new SVDPP(latent_factors, eta, reg);

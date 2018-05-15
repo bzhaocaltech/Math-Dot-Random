@@ -9,12 +9,10 @@ Matrix::Matrix(int num_rows, int num_cols) {
     this->num_rows = num_rows;
     this->num_cols = num_cols;
     this->matrix = new float[num_rows * num_cols];
-    this->row_locks = new std::vector<std::mutex*>(num_rows);
-    std::generate (this->row_locks->begin(), this->row_locks->end(),
-        [] () {
-            return new std::mutex();
-        }
-    );
+    this->row_locks = new std::mutex*[num_rows];
+    for (int i = 0; i < num_rows; i++) {
+      this->row_locks[i] = new std::mutex();
+    }
 }
 
 /* Construct a matrix from a file */
@@ -40,12 +38,10 @@ Matrix::Matrix(string file) {
   }
 
   /* Create row locks */
-  this->row_locks = new std::vector<std::mutex*>(num_rows);
-  std::generate (this->row_locks->begin(), this->row_locks->end(),
-      [] () {
-          return new std::mutex();
-      }
-  );
+  this->row_locks = new std::mutex*[num_rows];
+  for (int i = 0; i < num_rows; i++) {
+    this->row_locks[i] = new std::mutex();
+  }
 };
 
 /* Serializes a matrix to a file */
@@ -96,17 +92,21 @@ void Matrix::mul_scalar(float scalar) {
 
 /* Destructor for matrix */
 Matrix::~Matrix() {
-    delete this->matrix;
+  for (int i = 0; i < num_rows; i++) {
+    delete this->row_locks[i];
+  }
+  delete this->row_locks;
+  delete this->matrix;
 }
 
 /* Updates with a matrix row pointed to by new_row. Frees new_row afterwards. */
 void Matrix::update_row(int row, float* new_row) {
-    this->row_locks->at(row)->lock();
+    this->row_locks[row]->lock();
     float* matrix_row = this->row(row);
     for (int i = 0; i < this->num_cols; i++) {
         matrix_row[i] = new_row[i];
     }
-    this->row_locks->at(row)->unlock();
+    this->row_locks[row]->unlock();
     delete new_row;
 };
 

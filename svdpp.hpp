@@ -17,7 +17,7 @@ class SVDPP : public SVD {
     /* Predicts a single point */
     float predict_one(struct data d);
 
-    /* Returns the implicit feedback factor |N(u)|^2 * sum_{j \in N(u)} y_j for
+    /* Returns the implicit feedback factor |N(u)|^-0.5 * sum_{j \in N(u)} y_j for
      * a given user */
     float* get_f_factor(int user);
 

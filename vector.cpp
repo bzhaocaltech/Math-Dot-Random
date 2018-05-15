@@ -5,22 +5,20 @@
 
 Vector::Vector(int length) {
     this->vector = new float[length];
-    this->vector_locks = new std::vector<std::mutex*>(length);
-    std::generate (this->vector_locks->begin(), this->vector_locks->end(),
-        [] () {
-            return new std::mutex();
-        }
-    );
+    this->vector_locks = new std::mutex*[length];
+    for (int i = 0; i < length; i++) {
+      this->vector_locks[i] = new std::mutex();
+    }
+    this->length = length;
 }
 
 Vector::Vector(int length, float* vector) {
     this->vector = vector;
-    this->vector_locks = new std::vector<std::mutex*>(length);
-    std::generate (this->vector_locks->begin(), this->vector_locks->end(),
-        [] () {
-            return new std::mutex();
-        }
-    );
+    this->vector_locks = new std::mutex*[length];
+    for (int i = 0; i < length; i++) {
+      this->vector_locks[i] = new std::mutex();
+    }
+    this->length = length;
 }
 
 float* Vector::get_vector() {
@@ -28,9 +26,9 @@ float* Vector::get_vector() {
 }
 
 void Vector::update_element(int idx, float val) {
-    this->vector_locks->at(idx)->lock();
+    this->vector_locks[idx]->lock();
     this->vector[idx] = val;
-    this->vector_locks->at(idx)->unlock();
+    this->vector_locks[idx]->unlock();
 }
 
 float Vector::at(int idx) {
@@ -39,5 +37,8 @@ float Vector::at(int idx) {
 
 Vector::~Vector() {
     delete this->vector;
+    for (int i = 0; i < length; i++) {
+        delete this->vector_locks[i];
+    }
     delete this->vector_locks;
 }

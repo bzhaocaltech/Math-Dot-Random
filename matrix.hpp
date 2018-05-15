@@ -14,7 +14,7 @@ class Matrix {
     int num_rows;
     int num_cols;
     float* matrix;
-    std::vector<std::mutex*>* row_locks;
+    std::mutex** row_locks;
   public:
     /* Constructor class for matrix */
     Matrix(int num_rows, int num_cols);
