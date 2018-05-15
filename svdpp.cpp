@@ -38,14 +38,13 @@ float SVDPP::predict_one(struct data data) {
   float* Vj = this->V->row(movie);
   // Calculate the feedback factor
   float* f_factor = this->get_f_factor(user);
-  // Add the f_factor to the user vector to get the adjusted user
-  // vector
-  float* adjusted_Ui = vec_add(Ui, f_factor, this->latent_factors);
+  float p = 0;
+  for (int i = 0; i < this->latent_factors; i++) {
+    float adjusted_Ui = Ui[i] - f_factor[i];
+    p += adjusted_Ui * Vj[i];
+  }
   delete f_factor;
-  // Get the prediction
-  float p = dot_prod(adjusted_Ui, Vj, this->latent_factors) + this->a->at(user)
-            + this->b->at(movie) + this->mu;
-  delete adjusted_Ui;
+  p += b->at(movie) + a->at(user) + this->mu;
   return p;
 }
 
@@ -61,6 +60,10 @@ float* SVDPP::get_f_factor(int user) {
   // Calculate factor |N(u)|^(-0.5)
   vector<int>* Ni = this->N[user];
   float n = pow((float) Ni->size(), -0.5);
+  if (std::isinf(n)) {
+    fprintf(stderr, "n in get f_factor is inf \n");
+    exit(1);
+  }
   // Calculate sum of all implicit feedback movie vectors that the user has
   // watched
   float* sum_n = new float[this->latent_factors];
@@ -72,11 +75,23 @@ float* SVDPP::get_f_factor(int user) {
     float* yj = this->y->row(movie_watched);
     for (int i = 0; i < this->latent_factors; i++) {
       sum_n[i] += yj[i];
+      if (std::isinf(yj[i])) {
+        fprintf(stderr, "yji was %f\n", yj[i]);
+        exit(1);
+      }
     }
   }
   // Multiply n * sum_n to get |N(u)|^(-0.5) * sum_(j \in N) y(j)
   float* f_factor = scalar_vec_prod(n, sum_n, this->latent_factors);
   delete sum_n;
+  for (int i = 0; i < this->latent_factors; i++) {
+    if (std::isnan(f_factor[i]) || std::isinf(f_factor[i])) {
+      fprintf(stderr, "is nan in getting f_factor\n");
+      fprintf(stderr, "value was %f\n", f_factor[i]);
+      fprintf(stderr, "n was %f\n", n);
+      exit(1);
+    }
+  }
   return f_factor;
 }
 
@@ -86,20 +101,19 @@ void SVDPP::grad_U(struct data d, float e) {
   // User and movie vectors
   float* Ui = this->U->row(user);
   float* Vj = this->V->row(movie);
-  // Calculate the regularization term
-  float* reg_term = scalar_vec_prod(this->reg, Ui, this->latent_factors);
-  // Calculate the error term
-  float* err_term = scalar_vec_prod(e, Vj, this->latent_factors);
-  // Gradient is difference
-  float* grad = vec_sub(reg_term, err_term, this->latent_factors);
-  delete reg_term;
-  delete err_term;
-  // Multiply by eta
-  float* eta_grad = scalar_vec_prod(this->eta, grad, this->latent_factors);
-  delete grad;
-  // Descend down the gradient
-  float* new_u = vec_sub(Ui, eta_grad, this->latent_factors);
-  delete eta_grad;
+  float* new_u = new float[this->latent_factors];
+  for (int i = 0; i < this->latent_factors; i++) {
+    float reg_term = this->reg * Ui[i];
+    float err_term = e * Vj[i];
+    float grad = eta * (reg_term - err_term);
+    new_u[i] = Ui[i] - grad;
+  }
+  for (int i = 0; i < this->latent_factors; i++) {
+    if (std::isnan(new_u[i]) || std::isinf(new_u[i])) {
+      fprintf(stderr, "is nan in getting grad_u\n");
+      exit(1);
+    }
+  }
   this->U->update_row(user, new_u);
 }
 
@@ -109,24 +123,21 @@ void SVDPP::grad_V(struct data d, float e) {
   // User and movie vectors
   float* Ui = this->U->row(user);
   float* Vj = this->V->row(movie);
-  // Calculate the regularization term
-  float* reg_term = scalar_vec_prod(this->reg, Vj, this->latent_factors);
-  // Calculate the error term
   float* f_factor = this->get_f_factor(user);
-  float* adjusted_Ui = vec_add(Ui, f_factor, this->latent_factors);
-  float* err_term = scalar_vec_prod(e, adjusted_Ui, this->latent_factors);
-  delete adjusted_Ui;
+  float* new_v = new float[this->latent_factors];
+  for (int i = 0; i < this->latent_factors; i++) {
+    float reg_term = this->reg * Vj[i];
+    float err_term = e * (Ui[i] + f_factor[i]);
+    float grad = eta * (reg_term - err_term);
+    new_v[i] = Vj[i] - grad;
+  }
   delete f_factor;
-  // Gradient is difference
-  float* grad = vec_sub(reg_term, err_term, this->latent_factors);
-  delete reg_term;
-  delete err_term;
-  // Multiply by eta
-  float* eta_grad = scalar_vec_prod(this->eta, grad, this->latent_factors);
-  delete grad;
-  // Descend down the gradient
-  float* new_v = vec_sub(Vj, eta_grad, this->latent_factors);
-  delete eta_grad;
+  for (int i = 0; i < this->latent_factors; i++) {
+    if (std::isnan(new_v[i]) || std::isinf(new_v[i])) {
+      fprintf(stderr, "is nan in getting grad_v\n");
+      exit(1);
+    }
+  }
   this->V->update_row(movie, new_v);
 }
 
@@ -135,6 +146,10 @@ void SVDPP::grad_a(struct data d, float e) {
   float reg_term = this->a->at(user) * this->reg;
   float eta_grad = this->eta * (reg_term - e);
   float value = this->a->at(user) - eta_grad;
+  if (std::isnan(value) || std::isinf(value)) {
+    fprintf(stderr, "is nan in getting grad_a\n");
+    exit(1);
+  }
   this->a->update_element(user, value);
 }
 
@@ -143,6 +158,10 @@ void SVDPP::grad_b(struct data d, float e) {
   float reg_term = this->b->at(movie) * this->reg;
   float eta_grad = this->eta * (reg_term - e);
   float value = this->b->at(movie) - eta_grad;
+  if (std::isnan(value) || std::isinf(value)) {
+    fprintf(stderr, "is nan in getting grad_b\n");
+    exit(1);
+  }
   this->b->update_element(movie, value);
 }
 
@@ -153,23 +172,38 @@ void SVDPP::grad_y(struct data d, int movie_watched, float e) {
   int movie = d.movie;
   float* yj = this->y->row(movie_watched);
   float* Vj = this->V->row(movie);
-  // Find regularization term
-  float* reg_term = scalar_vec_prod(this->reg, yj, this->latent_factors);
-  // Find error term
-  float n = pow((float) this->N[user]->size(), -0.5);
-  float* temp = scalar_vec_prod(n, Vj, this->latent_factors);
-  float* err_term = scalar_vec_prod(e, temp, this->latent_factors);
-  delete temp;
-  // Gradient is difference
-  float* grad = vec_sub(reg_term, err_term, this->latent_factors);
-  delete reg_term;
-  delete err_term;
-  // Multiply by eta
-  float* eta_grad = scalar_vec_prod(this->eta, grad, this->latent_factors);
-  delete grad;
-  // Descend down the gradient
-  float* new_y = vec_sub(yj, eta_grad, this->latent_factors);
-  delete eta_grad;
+  float error_const = pow((float) this->N[user]->size(), -0.5) * e;
+  if (std::isnan(error_const)) {
+    fprintf(stderr, "is nan in getting error_const\n");
+    exit(1);
+  }
+  float* new_y = new float[this->latent_factors];
+  for (int i = 0; i < this->latent_factors; i++) {
+    float reg_term = this->reg * yj[i];
+    float err_term = error_const * Vj[i];
+    float grad = eta * (reg_term - err_term);
+    if (std::isnan(reg_term) || std::isinf(reg_term)) {
+      fprintf(stderr, "is nan in getting reg\n");
+      exit(1);
+    }
+    if (std::isnan(err_term) || std::isinf(reg_term)) {
+      fprintf(stderr, "is nan in getting err\n");
+      exit(1);
+    }
+    if (std::isnan(grad) || std::isinf(grad)) {
+      fprintf(stderr, "is nan in getting grad\n");
+      fprintf(stderr, "reg term was %f\n", reg_term);
+      fprintf(stderr, "err term was %f\n", err_term);
+      exit(1);
+    }
+    new_y[i] = yj[i] - grad;
+  }
+  for (int i = 0; i < this->latent_factors; i++) {
+    if (std::isnan(new_y[i]) || std::isinf(new_y[i])) {
+      fprintf(stderr, "is nan in getting grad_y\n");
+      exit(1);
+    }
+  }
   this->y->update_row(movie_watched, new_y);
 }
 
@@ -186,10 +220,7 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
     int user = data.user;
     for (unsigned int u = 0; u < this->N[user]->size(); u++) {
       int movie_watched = this->N[user]->at(u);
-      // TODO: The if statement is only here to reduce runtime
-      if (movie_watched == data.movie) {
       this->grad_y(data, movie_watched, error);
-      }
     }
     if ((n % dot_break == 0) && track_progress) {
       fprintf(stderr, ".");
@@ -223,7 +254,6 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
   }
   fprintf(stderr, "N initialized \n");
 
-  fprintf(stderr, "Running %i epochs\n", epochs);
   // Initialize U, V, a, b randomly
   fprintf(stderr, "Randomly initializing matrices\n");
   for (int i = 0; i < this->num_users; i++) {
@@ -253,6 +283,7 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
     }
   }
   fprintf(stderr, "Matrices randomly initialized\n");
+  fprintf(stderr, "Running %i epochs\n", epochs);
 
   // Split the dataset
   struct dataset** threaded_dataset = split_dataset(dataset, num_threads);

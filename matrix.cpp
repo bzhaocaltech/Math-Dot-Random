@@ -65,11 +65,19 @@ float* Matrix::row(int row) {
 
 /* Returns the value of a particular element of the matrix */
 int Matrix::get_val(int row, int col) {
+    if (row > num_rows || col > num_cols) {
+      fprintf(stderr, "Out of bounds access in matrix \n");
+      exit(1);
+    }
     return this->matrix[row * this->num_cols + col];
 }
 
 /* Sets the value of a particular element of the matrix */
 void Matrix::set_val(int row, int col, float val) {
+    if (row > num_rows || col > num_cols) {
+      fprintf(stderr, "Out of bounds access in matrix \n");
+      exit(1);
+    }
     this->matrix[row * this->num_cols + col] = val;
 }
 
@@ -101,6 +109,10 @@ Matrix::~Matrix() {
 
 /* Updates with a matrix row pointed to by new_row. Frees new_row afterwards. */
 void Matrix::update_row(int row, float* new_row) {
+    if (row > num_rows) {
+      fprintf(stderr, "Out of bounds access in matrix \n");
+      exit(1);
+    }
     this->row_locks[row]->lock();
     float* matrix_row = this->row(row);
     for (int i = 0; i < this->num_cols; i++) {

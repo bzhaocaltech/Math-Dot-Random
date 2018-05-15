@@ -42,7 +42,7 @@ class SVDPP : public SVD {
 
     /* Given a list of x values in the form of (user, movie, time, rating)
      * fits the model */
-    void fit(struct dataset* dataset, int epochs, int num_threads = 8);
+    void fit(struct dataset* dataset, int epochs, int num_threads = 1);
 
     /* Destructor for SVD */
     ~SVDPP();
