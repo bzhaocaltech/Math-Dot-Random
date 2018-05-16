@@ -222,6 +222,7 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
   // Split the dataset
   struct dataset** threaded_dataset = split_dataset(dataset, num_threads);
 
+  float original_eta = this->eta;
   for (int curr_epoch = 0; curr_epoch < epochs; curr_epoch++) {
     fprintf(stderr, "Running epoch %i", curr_epoch + 1);
 
@@ -241,8 +242,12 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
       threads[i].join();
     }
 
+    // Reduce the learning rate
+    this->eta *= 0.9;
+
     fprintf(stderr, "\n");
   }
+  this->eta = original_eta;
 }
 
 SVDPP::~SVDPP() {
