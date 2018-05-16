@@ -26,20 +26,12 @@ float* Vector::get_vector() {
 }
 
 void Vector::update_element(int idx, float val) {
-    if (idx > length) {
-      fprintf(stderr, "Out of bounds for update for vector \n");
-      exit(1);
-    }
     this->vector_locks[idx]->lock();
     this->vector[idx] = val;
     this->vector_locks[idx]->unlock();
 }
 
 float Vector::at(int idx) {
-    if (idx > length) {
-      fprintf(stderr, "Out of bounds for access for vector \n");
-      exit(1);
-    }
     return this->vector[idx];
 }
 

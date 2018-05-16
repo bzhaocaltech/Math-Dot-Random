@@ -24,13 +24,6 @@ class SVDPP : public SVD {
     /* Run a gradient on part of the dataset */
     void grad_part(struct dataset* ds, bool track_progress);
 
-    /* A whole bunch of gradients. E is the error returned by get_err */
-    void grad_U(struct data d, float e);
-    void grad_V(struct data d, float e);
-    void grad_a(struct data d, float e);
-    void grad_b(struct data d, float e);
-    void grad_y(struct data d, int movie, float e);
-
   public:
     /* Constructor for SVDPP */
     SVDPP(int latent_factors, float eta, float reg, int num_users = NUM_USERS,
@@ -42,7 +35,7 @@ class SVDPP : public SVD {
 
     /* Given a list of x values in the form of (user, movie, time, rating)
      * fits the model */
-    void fit(struct dataset* dataset, int epochs, int num_threads = 1);
+    void fit(struct dataset* dataset, int epochs, int num_threads = 8);
 
     /* Destructor for SVD */
     ~SVDPP();
