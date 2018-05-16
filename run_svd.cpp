@@ -21,13 +21,16 @@ int main(int argc, char *argv[]) {
 
   struct dataset* x_train = unserialize("data/mu_train.ser");
   struct dataset* x_valid = unserialize("data/mu_valid.ser");
+  struct dataset* x_probe = unserialize("data/mu_probe.ser");
 
   SVD* svd = new SVD(latent_factors, eta, reg);
   svd->fit(x_train, epochs);
-  float score = svd->score(x_valid);
-  printf("Out of sample MSE is %f\n", score);
-  score = svd->score(x_train);
-  printf("In sample MSE is %f\n", score);
+  float score = svd->score(x_train);
+  printf("In sample RMSE is %f\n", score);
+  score = svd->score(x_valid);
+  printf("Out of sample RMSE is %f\n", score);
+  score = svd->score(x_probe);
+  printf("Probe RMSE is %f\n", score);
 
   delete x_train->data;
   delete x_train;

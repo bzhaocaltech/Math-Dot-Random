@@ -19,15 +19,18 @@ int main(int argc, char *argv[]) {
   // string file_name = string("models/svd_") + argv[1] + "_" + argv[2] + "_" + argv[3]
   // + "_" + argv[4] + ".ser";
 
-  struct dataset* x_train = unserialize("data/um_probe.ser");
+  struct dataset* x_train = unserialize("data/um_train.ser");
   struct dataset* x_valid = unserialize("data/um_valid.ser");
+  struct dataset* x_probe = unserialize("data/um_probe.ser");
 
   SVDPP* svdpp = new SVDPP(latent_factors, eta, reg);
   svdpp->fit(x_train, epochs);
-  float score = svdpp->score(x_valid);
-  printf("Out of sample MSE is %f\n", score);
-  score = svdpp->score(x_train);
-  printf("In sample MSE is %f\n", score);
+  float score = svdpp->score(x_train);
+  printf("In sample RMSE is %f\n", score);
+  score = svdpp->score(x_valid);
+  printf("Out of sample RMSE is %f\n", score);
+  score = svdpp->score(x_probe);
+  printf("Probe RMSE is %f\n", score);
 
   delete x_train->data;
   delete x_train;
