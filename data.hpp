@@ -5,7 +5,7 @@
 #include <cstdint>
 
 // Size of datasets
-#define SIZE_TRAIN 94362233
+#define SIZE_TRAIN 96326624
 #define SIZE_VALID 1965045
 #define SIZE_HIDDEN 1964391
 #define SIZE_PROBE 1374739

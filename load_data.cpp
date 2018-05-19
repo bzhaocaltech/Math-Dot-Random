@@ -73,6 +73,8 @@ int main() {
     // Part of the hidden set
     if (index == 3) {
       mu_hidden->data[hidden_counter] = parsed_line;
+      mu_train->data[train_counter] = parsed_line;
+      train_counter++;
       hidden_counter++;
     }
     // Part of probe
@@ -142,6 +144,8 @@ int main() {
     // Part of the hidden set
     if (index == 3) {
       um_hidden->data[hidden_counter] = parsed_line;
+      um_train->data[train_counter] = parsed_line;
+      train_counter++;
       hidden_counter++;
     }
     // Part of probe
