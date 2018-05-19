@@ -162,7 +162,7 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
   }
 }
 
-void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
+void SVDPP::fit(struct dataset* dataset, int epochs, struct dataset* validation_set, int num_threads) {
   fprintf(stderr, "Fitting the data of size %i\n", dataset->size);
   fprintf(stderr, "Using %i threads\n", num_threads);
 
@@ -223,6 +223,8 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
   struct dataset** threaded_dataset = split_dataset(dataset, num_threads);
 
   float original_eta = this->eta;
+  float prev_RMSE = 5;
+  int failed_epochs = 0;
   for (int curr_epoch = 0; curr_epoch < epochs; curr_epoch++) {
     fprintf(stderr, "Running epoch %i", curr_epoch + 1);
 
@@ -246,6 +248,28 @@ void SVDPP::fit(struct dataset* dataset, int epochs, int num_threads) {
     this->eta *= 0.9;
 
     fprintf(stderr, "\n");
+
+    // Get error on validation set
+    if (validation_set != NULL) {
+        float score = this->score(validation_set);
+        fprintf(stderr, "RMSE on validation set was: %f \n", score);
+        if (curr_epoch == 0) {
+          prev_RMSE = score;
+        }
+        // Early stopping
+        else if (prev_RMSE < score + 0.0005) {
+          failed_epochs++;
+        }
+        else {
+          failed_epochs = 0;
+        }
+        // If we have three consecutive failures to decrease RMSE, stop
+        if (failed_epochs == 3) {
+          fprintf(stderr, "RMSE did not decrease for three consecutive epochs. Stopping early\n");
+          break;
+        }
+        prev_RMSE = score;
+    }
   }
   this->eta = original_eta;
 }

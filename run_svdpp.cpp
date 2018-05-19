@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   struct dataset* x_probe = unserialize("data/um_probe.ser");
 
   SVDPP* svdpp = new SVDPP(latent_factors, eta, reg);
-  svdpp->fit(x_train, epochs);
+  svdpp->fit(x_train, epochs, x_probe);
   float score = svdpp->score(x_train);
   printf("In sample RMSE is %f\n", score);
   score = svdpp->score(x_valid);

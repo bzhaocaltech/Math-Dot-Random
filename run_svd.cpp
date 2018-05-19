@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   struct dataset* x_probe = unserialize("data/mu_probe.ser");
 
   SVD* svd = new SVD(latent_factors, eta, reg);
-  svd->fit(x_train, epochs);
+  svd->fit(x_train, epochs, x_probe);
   float score = svd->score(x_train);
   printf("In sample RMSE is %f\n", score);
   score = svd->score(x_valid);
