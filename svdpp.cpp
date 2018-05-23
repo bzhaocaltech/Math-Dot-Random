@@ -14,7 +14,7 @@ SVDPP::SVDPP(int latent_factors, float eta, float reg, int num_users, int num_mo
 : SVD::SVD(latent_factors, eta, reg, num_users, num_movies) {
   fprintf(stderr, "Adding SVD++ features \n");
   this->N = new vector<int>*[num_users];
-  this->y = new Matrix(num_movies, latent_factors);
+  this->y = new Matrix<float>(num_movies, latent_factors);
 }
 
 /* Given a list of x values in the form of (user, movie, time) predicts
@@ -281,3 +281,6 @@ SVDPP::~SVDPP() {
   delete this->N;
   delete this->y;
 }
+
+template class Matrix<int>;
+template class Matrix<float>;
