@@ -9,9 +9,11 @@ class KNN : public Model {
     /* The size of neighborhoods we are considering */
     int n_size;
     /* Roughly correlates to a regularization term. How much we consider sparsity */
-    float alpha;
+    int alpha;
     /* The exponent that we take in weighting values */
     float e;
+    /* The minimum pearson value that we will consider */
+    float min_pearson;
 
     /* Num of users and movies */
     int num_users;
@@ -52,7 +54,7 @@ class KNN : public Model {
     /* Constructor for KNN
      * n_size is the size of the neighborhood. alpha is a term representing how
      * much we punish sparsity */
-    KNN(int n_size, float alpha, float e, int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
+    KNN(int n_size, int alpha, float e, float min_pearson, int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 
     /* Returns the neighborhood size */
     int get_n_size();

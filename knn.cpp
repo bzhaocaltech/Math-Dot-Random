@@ -4,20 +4,21 @@
 
 /* Constructor for KNN
  * n_size is the size of the neighborhood */
-KNN::KNN(int n_size, float alpha, float e, int num_threads, int num_users, int num_movies) {
+KNN::KNN(int n_size, int alpha, float e, float min_pearson, int num_threads, int num_users, int num_movies) {
   this->n_size = n_size;
   this->num_users = num_users;
   this->num_movies = num_movies;
   this->num_threads = num_threads;
   this->alpha = alpha;
   this->e = e;
+  this->min_pearson = min_pearson;
   corr = new Matrix<float>(num_movies, num_movies);
   sorted_corr = new vector<int>*[num_movies];
   user_index = new int[num_users];
   movie_index = new int[num_movies];
   fprintf(stderr, "Creating KNN using Pearson correlation with n_size = %i\n", n_size);
   fprintf(stderr, "Using %d threads\n", num_threads);
-  fprintf(stderr, "Using parameter alpha = %f and exp = %f\n", alpha, e);
+  fprintf(stderr, "Using parameter alpha = %d, exp = %f, and min_pearson = %f\n", alpha, e, min_pearson);
 }
 
 /* Returns the neighborhood size */
@@ -226,8 +227,8 @@ void KNN::fit_part(int start, int end, struct dataset* mu_train, struct dataset*
     vector<int>* to_sort = new vector<int>();
     for (int i = 0; i < num_movies; i++) {
       movie_correlations[i] = this->calculate_corr(&intermediates[i]);
-      // Ignore correlations below 0.5
-      if (movie_correlations[i] >= 0) {
+      // Ignore correlations that are below are equal to 0
+      if (movie_correlations[i] > 0) {
         to_sort->push_back(i);
       }
     }
@@ -310,6 +311,10 @@ float KNN::calculate_corr(struct pearson* p) {
   }
   else {
     pearson = (numer / (denom_1 * denom_2));
+  }
+  // Ignore values below a certain number
+  if (pearson < min_pearson) {
+    return 0;
   }
   // Penalize sparsity
   float sparse_pearson = pearson * (float) p->cnt / ((float) p->cnt + this->alpha);
