@@ -7,4 +7,5 @@ load_data
 run_svd
 run_svdpp
 run_mean_model
+run_knn
 *.dta

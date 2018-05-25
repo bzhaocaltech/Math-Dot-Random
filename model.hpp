@@ -17,9 +17,6 @@ class Model {
     /* Given dataset returns vector containing predicted rating */
     virtual vector<float>* predict(struct dataset* x) = 0;
 
-    /* Serializes the model into a given file */
-    virtual void serialize(string file) = 0;
-
     /* Uses an some measure to return the error incurred by a predicted rating.
      * Uses squared error by default unless overloaded by a child class. */
     float error(float predicted_rating, int actual_rating);
