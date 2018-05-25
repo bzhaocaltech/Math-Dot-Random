@@ -7,19 +7,21 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    printf("USAGE: ./run_knn neighborhood_size\n");
+  if (argc != 4) {
+    printf("USAGE: ./run_knn neighborhood_size alpha e\n");
     exit(1);
   }
   // Get command line arguments
   int n_size = atoi(argv[1]);
+  float alpha = atof(argv[2]);
+  float e = atof(argv[3]);
 
   struct dataset* um_train = unserialize("data/um_train.ser");
   struct dataset* mu_train = unserialize("data/mu_train.ser");
   struct dataset* valid = unserialize("data/um_valid.ser");
   struct dataset* probe = unserialize("data/um_probe.ser");
 
-  KNN* knn = new KNN(n_size);
+  KNN* knn = new KNN(n_size, alpha, e);
   knn->fit(um_train, mu_train);
   // float score = knn->score(um_train);
   // printf("In sample RMSE is %f\n", score);

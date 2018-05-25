@@ -8,6 +8,10 @@ class KNN : public Model {
   protected:
     /* The size of neighborhoods we are considering */
     int n_size;
+    /* Roughly correlates to a regularization term. How much we consider sparsity */
+    float alpha;
+    /* The exponent that we take in weighting values */
+    float e;
 
     /* Num of users and movies */
     int num_users;
@@ -35,18 +39,32 @@ class KNN : public Model {
     /* Predicts the rating of a single datapoint */
     float predict_one(struct data data);
 
+    /* Predicts the rating of part of the dataset. Meant to be used to enable multithreading */
+    void predict_part(int start, int end, struct dataset* dataset, float* predictions, bool track_progress = false);
+
     /* Fit on part of the dataset */
     void fit_part(int start, int end, struct dataset* mu_train, struct dataset* um_train, bool track_progress = false);
+
+    /* Calculate the correlation based on the given struct (in this case a
+     * pearson struct) */
+    float calculate_corr(struct pearson* p);
   public:
     /* Constructor for KNN
-     * n_size is the size of the neighborhood */
-    KNN(int n_size, int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
+     * n_size is the size of the neighborhood. alpha is a term representing how
+     * much we punish sparsity */
+    KNN(int n_size, float alpha, float e, int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 
     /* Returns the neighborhood size */
     int get_n_size();
 
     /* Set the neighborhood size */
     void set_n_size(int n_size);
+
+    /* Returns e */
+    float get_e();
+
+    /* Set e */
+    void set_e(float e);
 
     /* Predicts the ratings for a given dataset */
     std::vector<float>* predict(struct dataset* dataset);

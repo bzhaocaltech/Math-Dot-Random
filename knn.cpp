@@ -4,16 +4,20 @@
 
 /* Constructor for KNN
  * n_size is the size of the neighborhood */
-KNN::KNN(int n_size, int num_threads, int num_users, int num_movies) {
+KNN::KNN(int n_size, float alpha, float e, int num_threads, int num_users, int num_movies) {
   this->n_size = n_size;
   this->num_users = num_users;
   this->num_movies = num_movies;
   this->num_threads = num_threads;
+  this->alpha = alpha;
+  this->e = e;
   corr = new Matrix<float>(num_movies, num_movies);
   sorted_corr = new vector<int>*[num_movies];
   user_index = new int[num_users];
   movie_index = new int[num_movies];
   fprintf(stderr, "Creating KNN using Pearson correlation with n_size = %i\n", n_size);
+  fprintf(stderr, "Using %d threads\n", num_threads);
+  fprintf(stderr, "Using parameter alpha = %f and exp = %f\n", alpha, e);
 }
 
 /* Returns the neighborhood size */
@@ -25,6 +29,17 @@ int KNN::get_n_size() {
 void KNN::set_n_size(int n_size) {
   this->n_size = n_size;
   fprintf(stderr, "Setting neighborhood size to %i\n", n_size);
+}
+
+/* Returns e */
+float KNN::get_e() {
+  return e;
+}
+
+/* Set e */
+void KNN::set_e(float e) {
+  this->e = e;
+  fprintf(stderr, "Setting e to %f\n", e);
 }
 
 /* Quicksort indices based on corr to create sorted_corr */
@@ -96,8 +111,9 @@ float KNN::predict_one(struct data data) {
     // Update values if the user has watched that movie
     if (movie_neighbor_rating != -1) {
       neighbors_found++;
-      numer += correlation_values[movie_neighbor] * (float) movie_neighbor_rating;
-      denom += correlation_values[movie_neighbor];
+      float adjusted_corr = pow(correlation_values[movie_neighbor], e);
+      numer += adjusted_corr * (float) movie_neighbor_rating;
+      denom += adjusted_corr;
       // If we found enough neighbors, stop
       if (neighbors_found == n_size) {
         break;
@@ -113,19 +129,53 @@ float KNN::predict_one(struct data data) {
 /* Given a list of x values in the form of (user, movie, time) predicts
  * the rating */
 std::vector<float>* KNN::predict(struct dataset* dataset) {
-  vector<float>* predictions = new vector<float>();
-  int print_dot = dataset->size / 30;
   fprintf(stderr, "Predicting data of size %i", dataset->size);
+  vector<float>* predictions = new vector<float>();
+  float* arr_predictions = new float[dataset->size];
+  // Divide the dataset
+  int* thread_ends = new int[num_threads];
+  for (int i = 0; i < num_threads; i++) {
+    thread_ends[i] = (i + 1) * (dataset->size / num_threads);
+  }
+  // Create the threads
+  std::thread threads[num_threads];
+  for (int i = 0; i < num_threads; i++) {
+    if (i == 0) {
+      threads[i] = std::thread(&KNN::predict_part, this, 0, thread_ends[i], dataset, arr_predictions, true);
+    }
+    else {
+      if (i == num_threads - 1) {
+        threads[i] = std::thread(&KNN::predict_part, this, thread_ends[i - 1], dataset->size, dataset, arr_predictions, false);
+      }
+      else {
+        threads[i] = std::thread(&KNN::predict_part, this, thread_ends[i - 1], thread_ends[i], dataset, arr_predictions, false);
+      }
+    }
+  }
+  // Join the threads back together
+  for (int i = 0; i < num_threads; i++) {
+      threads[i].join();
+  }
+  fprintf(stderr, "\n");
+  // Convert arr_predictions into a vector
   for (int i = 0; i < dataset->size; i++) {
-    if (i % print_dot == 0) {
+    predictions->push_back(arr_predictions[i]);
+  }
+  delete arr_predictions;
+  delete thread_ends;
+  return predictions;
+}
+
+void KNN::predict_part(int start, int end, struct dataset* dataset, float* predictions, bool track_progress) {
+  int print_dot = (end - start) / 30;
+  for (int i = start; i < end; i++) {
+    if (track_progress && (i % print_dot == 0)) {
       fprintf(stderr, ".");
     }
     struct data data = dataset->data[i];
     float p = this->predict_one(data);
-    predictions->push_back(p);
+    predictions[i] = p;
   }
-  fprintf(stderr, "\n");
-  return predictions;
 }
 
 /* Fit on a portion of the data */
@@ -175,9 +225,9 @@ void KNN::fit_part(int start, int end, struct dataset* mu_train, struct dataset*
     // Also calculate sorted corr
     vector<int>* to_sort = new vector<int>();
     for (int i = 0; i < num_movies; i++) {
-      movie_correlations[i] = calculate_pearson(&intermediates[i]);
+      movie_correlations[i] = this->calculate_corr(&intermediates[i]);
       // Ignore correlations below 0.5
-      if (movie_correlations[i] >= 0.01) {
+      if (movie_correlations[i] >= 0) {
         to_sort->push_back(i);
       }
     }
@@ -248,6 +298,24 @@ void KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
   fprintf(stderr, "Correlations calculated. Model has been fitted\n");
 }
 
+/* Calculate the correlation based on the given struct (in this case a
+ * pearson struct) */
+float KNN::calculate_corr(struct pearson* p) {
+  float numer = p->cnt * p->xy - (p->x * p->y);
+  float denom_1 = pow((float) (p->cnt * p->xx - p->x * p->x), 0.5);
+  float denom_2 = pow((float) (p->cnt * p->yy - p->y * p->y), 0.5);
+  float pearson;
+  if (denom_1 * denom_2 == 0) {
+    pearson = 0;
+  }
+  else {
+    pearson = (numer / (denom_1 * denom_2));
+  }
+  // Penalize sparsity
+  float sparse_pearson = pearson * (float) p->cnt / ((float) p->cnt + this->alpha);
+  return sparse_pearson;
+}
+
 KNN::~KNN() {
   delete corr;
   delete sorted_corr;
@@ -272,22 +340,4 @@ void update_pearson(struct pearson* p, int x_rating, int y_rating) {
   p->xx += x_rating * x_rating;
   p->yy += y_rating * y_rating;
   p->cnt++;
-}
-
-// Calculate the pearson correlation coefficient given the pearson struct
-float calculate_pearson(struct pearson* p) {
-  float numer = p->cnt * p->xy - (p->x * p->y);
-  float denom_1 = pow((float) (p->cnt * p->xx - p->x * p->x), 0.5);
-  float denom_2 = pow((float) (p->cnt * p->yy - p->y * p->y), 0.5);
-  float pearson;
-  if (denom_1 * denom_2 == 0) {
-    pearson = 0;
-  }
-  else {
-    pearson = (numer / (denom_1 * denom_2));
-  }
-  // Penalize sparsity
-  float alpha = 40;
-  float sparse_pearson = pearson * (float) p->cnt / ((float) p->cnt + alpha);
-  return sparse_pearson;
 }
