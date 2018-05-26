@@ -1,14 +1,14 @@
 /* Runs a KNN */
 /* TODO: Serialize the model */
 
-#include "knn.hpp"
+#include "time_knn.hpp"
 #include "serialize.hpp"
 #include "output.hpp"
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-  if (argc != 5) {
-    printf("USAGE: ./run_knn neighborhood_size alpha e min_pearson\n");
+  if (argc != 6) {
+    printf("USAGE: ./run_knn neighborhood_size alpha e min_pearson tau\n");
     exit(1);
   }
   // Get command line arguments
@@ -16,18 +16,19 @@ int main(int argc, char *argv[]) {
   int alpha = atoi(argv[2]);
   float e = atof(argv[3]);
   float min_pearson = atof(argv[4]);
+  float tau = atof(argv[5]);
 
   struct dataset* um_train = unserialize("data/um_train.ser");
   struct dataset* mu_train = unserialize("data/mu_train.ser");
   struct dataset* probe = unserialize("data/um_probe.ser");
 
-  KNN* knn = new KNN(n_size, alpha, e, min_pearson);
-  knn->fit(um_train, mu_train);
-  float score = knn->score(probe);
+  TIME_KNN* time_knn = new TIME_KNN(n_size, alpha, e, min_pearson, tau);
+  time_knn->fit(um_train, mu_train);
+  float score = time_knn->score(probe);
   printf("Probe RMSE is %f\n", score);
 
   struct dataset* test = unserialize("data/um_qual.ser");
-  std::vector<float>* predictions = knn->predict(test);
+  std::vector<float>* predictions = time_knn->predict(test);
 
   output(*predictions, "results.dta");
 

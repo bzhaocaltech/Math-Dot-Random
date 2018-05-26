@@ -54,7 +54,8 @@ class KNN : public Model {
     /* Constructor for KNN
      * n_size is the size of the neighborhood. alpha is a term representing how
      * much we punish sparsity */
-    KNN(int n_size, int alpha, float e, float min_pearson, int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
+    KNN(int n_size, int alpha, float e, float min_pearson, int num_threads = 8,
+        int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 
     /* Returns the neighborhood size */
     int get_n_size();

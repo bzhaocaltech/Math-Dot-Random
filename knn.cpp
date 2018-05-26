@@ -70,12 +70,12 @@ vector<int>* KNN::quicksort_corr(vector<int>* vec, float* values) {
   vector<int>* sorted_high = quicksort_corr(high, values);
   // Combine the two sorted lists
   vector<int>* sorted_all = new vector<int>();
-  for (unsigned int i = 0; i < sorted_low->size(); i++) {
-    sorted_all->push_back(sorted_low->at(i));
-  }
-  sorted_all->push_back(pivot);
   for (unsigned int i = 0; i < sorted_high->size(); i++) {
     sorted_all->push_back(sorted_high->at(i));
+  }
+  sorted_all->push_back(pivot);
+  for (unsigned int i = 0; i < sorted_low->size(); i++) {
+    sorted_all->push_back(sorted_low->at(i));
   }
   delete sorted_low;
   delete sorted_high;
@@ -84,6 +84,7 @@ vector<int>* KNN::quicksort_corr(vector<int>* vec, float* values) {
 
 /* Predict a single datapoint */
 float KNN::predict_one(struct data data) {
+  fprintf(stderr,"hi\n");
   float* correlation_values = corr->row(data.movie);
   vector<int>* movie_correlations = sorted_corr[data.movie];
   // Indices we need to search between to see if a user has rated a movie
@@ -99,7 +100,7 @@ float KNN::predict_one(struct data data) {
   int neighbors_found = 0;
   float numer = 0;
   float denom = 0;
-  for (int i = movie_correlations->size() - 1; i >= 0; i--) {
+  for (unsigned int i = 0; i < movie_correlations->size(); i++) {
     int movie_neighbor = movie_correlations->at(i);
     // Find user's rating of movie_neighbor (if exists)
     int movie_neighbor_rating = -1;
