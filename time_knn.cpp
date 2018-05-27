@@ -11,15 +11,37 @@ int num_threads, int num_users, int num_movies)
   fprintf(stderr, "Adding tau factor = %f for time \n", tau);
 }
 
-/* Returns e */
+/* Returns tau */
 float TIME_KNN::get_tau() {
   return tau;
 }
 
-/* Set e */
+/* Set tau */
 void TIME_KNN::set_tau(float tau) {
   this->tau = tau;
   fprintf(stderr, "Setting tau to %f\n", tau);
+}
+
+/* Returns delta */
+float TIME_KNN::get_delta() {
+  return delta;
+}
+
+/* Set delta */
+void TIME_KNN::set_delta(float delta) {
+  this->delta = delta;
+  fprintf(stderr, "Setting delta to %f\n", delta);
+}
+
+/* Returns gamma */
+float TIME_KNN::get_gamma() {
+  return gamma;
+}
+
+/* Set gamma */
+void TIME_KNN::set_gamma(float gamma) {
+  this->delta = gamma;
+  fprintf(stderr, "Setting gamma to %f\n", gamma);
 }
 
 /* Predict a single datapoint */

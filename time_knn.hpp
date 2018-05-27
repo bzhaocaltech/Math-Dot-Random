@@ -22,11 +22,23 @@ class TIME_KNN : public KNN {
     TIME_KNN(int n_size, int alpha, float e, float min_pearson, float tau, float delta, float gamma,
              int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 
-    /* Returns e */
+    /* Returns tau */
     float get_tau();
 
-    /* Set e */
+    /* Set tau */
     void set_tau(float tau);
+
+    /* Returns delta */
+    float get_delta();
+
+    /* Set delta */
+    void set_delta(float delta);
+
+    /* Returns gamma */
+    float get_gamma();
+
+    /* Set gamma */
+    void set_gamma(float gamma);
 
     /* Given a list of x values in the form of (user, movie, time) predicts
      * the rating */

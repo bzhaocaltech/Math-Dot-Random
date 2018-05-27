@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   // Get command line arguments
   int n_size = atoi(argv[1]);
   int alpha = atoi(argv[2]);
-  float e = 1
+  float e = 1;
   float min_pearson = -1;
   float tau = atof(argv[3]);
   float delta = atof(argv[4]);
