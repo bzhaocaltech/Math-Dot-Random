@@ -32,7 +32,6 @@ int KNN::get_n_size() {
 /* Set the neighborhood size */
 void KNN::set_n_size(int n_size) {
   this->n_size = n_size;
-  fprintf(stderr, "Setting neighborhood size to %i\n", n_size);
 }
 
 /* Returns e */
@@ -137,7 +136,7 @@ float KNN::predict_one(struct data data) {
 /* Given a list of x values in the form of (user, movie, time) predicts
  * the rating */
 std::vector<float>* KNN::predict(struct dataset* dataset) {
-  fprintf(stderr, "Predicting data of size %i", dataset->size);
+  // fprintf(stderr, "Predicting data of size %i", dataset->size);
   vector<float>* predictions = new vector<float>();
   float* arr_predictions = new float[dataset->size];
   // Divide the dataset
@@ -164,7 +163,7 @@ std::vector<float>* KNN::predict(struct dataset* dataset) {
   for (int i = 0; i < num_threads; i++) {
       threads[i].join();
   }
-  fprintf(stderr, "\n");
+  // fprintf(stderr, "\n");
   // Convert arr_predictions into a vector
   for (int i = 0; i < dataset->size; i++) {
     predictions->push_back(arr_predictions[i]);

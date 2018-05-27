@@ -11,15 +11,34 @@ int num_threads, int num_users, int num_movies)
   fprintf(stderr, "Adding tau factor = %f for time \n", tau);
 }
 
-/* Returns e */
+/* Returns tau */
 float TIME_KNN::get_tau() {
   return tau;
 }
 
-/* Set e */
+/* Set tau */
 void TIME_KNN::set_tau(float tau) {
   this->tau = tau;
-  fprintf(stderr, "Setting tau to %f\n", tau);
+}
+
+/* Returns delta */
+float TIME_KNN::get_delta() {
+  return delta;
+}
+
+/* Set delta */
+void TIME_KNN::set_delta(float delta) {
+  this->delta = delta;
+}
+
+/* Returns gamma */
+float TIME_KNN::get_gamma() {
+  return gamma;
+}
+
+/* Set gamma */
+void TIME_KNN::set_gamma(float gamma) {
+  this->gamma = gamma;
 }
 
 /* Predict a single datapoint */
@@ -84,7 +103,7 @@ float TIME_KNN::predict_one(struct data data) {
 /* Given a list of x values in the form of (user, movie, time) predicts
  * the rating */
 std::vector<float>* TIME_KNN::predict(struct dataset* dataset) {
-  fprintf(stderr, "Predicting data of size %i", dataset->size);
+  // fprintf(stderr, "Predicting data of size %i", dataset->size);
   vector<float>* predictions = new vector<float>();
   float* arr_predictions = new float[dataset->size];
   // Divide the dataset
@@ -111,7 +130,7 @@ std::vector<float>* TIME_KNN::predict(struct dataset* dataset) {
   for (int i = 0; i < num_threads; i++) {
       threads[i].join();
   }
-  fprintf(stderr, "\n");
+  // fprintf(stderr, "\n");
   // Convert arr_predictions into a vector
   for (int i = 0; i < dataset->size; i++) {
     predictions->push_back(arr_predictions[i]);
@@ -122,11 +141,11 @@ std::vector<float>* TIME_KNN::predict(struct dataset* dataset) {
 }
 
 void TIME_KNN::predict_part(int start, int end, struct dataset* dataset, float* predictions, bool track_progress) {
-  int print_dot = (end - start) / 30;
+  // int print_dot = (end - start) / 30;
   for (int i = start; i < end; i++) {
-    if (track_progress && (i % print_dot == 0)) {
-      fprintf(stderr, ".");
-    }
+    // if (track_progress && (i % print_dot == 0)) {
+    //   fprintf(stderr, ".");
+    // }
     struct data data = dataset->data[i];
     float p = this->predict_one(data);
     predictions[i] = p;

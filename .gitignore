@@ -9,4 +9,5 @@ run_svdpp
 run_mean_model
 run_knn
 run_time_knn
+tune_time_knn
 *.dta
