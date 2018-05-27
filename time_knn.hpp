@@ -7,6 +7,9 @@ class TIME_KNN : public KNN {
     /* Time factor. Represents how much we punish differences in time between
      * datapoints */
     float tau;
+    // Two other random floats that need to be tuned
+    float delta;
+    float gamma;
 
     /* Predict a single datapoint */
     float predict_one(struct data data);
@@ -16,7 +19,7 @@ class TIME_KNN : public KNN {
     void fit_part(int start, int end, struct dataset* mu_train, struct dataset* um_train, bool track_progress = false);
   public:
     /* Constructor */
-    TIME_KNN(int n_size, int alpha, float e, float min_pearson, float tau,
+    TIME_KNN(int n_size, int alpha, float e, float min_pearson, float tau, float delta, float gamma,
              int num_threads = 8, int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 
     /* Returns e */

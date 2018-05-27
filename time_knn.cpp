@@ -2,10 +2,12 @@
 #include <math.h>
 #include <thread>
 
-TIME_KNN::TIME_KNN(int n_size, int alpha, float e, float min_pearson, float tau,
+TIME_KNN::TIME_KNN(int n_size, int alpha, float e, float min_pearson, float tau, float delta, float gamma,
 int num_threads, int num_users, int num_movies)
 : KNN::KNN(n_size, alpha, e, min_pearson, num_threads, num_users, num_movies){
   this->tau = tau;
+  this->delta = delta;
+  this->gamma = gamma;
   fprintf(stderr, "Adding tau factor = %f for time \n", tau);
 }
 
@@ -23,7 +25,6 @@ void TIME_KNN::set_tau(float tau) {
 /* Predict a single datapoint */
 float TIME_KNN::predict_one(struct data data) {
   float* correlation_values = corr->row(data.movie);
-  float* pearson_values = pearson_corr->row(data.movie);
   // Indices we need to search between to see if a user has rated a movie
   int user_start_index = user_index[data.user];
   int user_end_index;
@@ -38,14 +39,15 @@ float TIME_KNN::predict_one(struct data data) {
   // Also save the ratings and grab adjusted correlation values
   int* movie_ratings = new int[num_movies];
   float* adjusted_corr = new float[num_movies];
-  float* adjusted_pearson = new float[num_movies];
   for (int i = user_start_index; i < user_end_index; i++) {
     struct data curr_point = training_set->data[i];
     int movie = curr_point.movie;
     movie_ratings[movie] = curr_point.rating;
     float deltat = fabs(data.date - curr_point.date);
-    adjusted_corr[movie] = correlation_values[movie] * (float (1) / (float (1) + tau * deltat));
-    adjusted_pearson[movie] = pearson_values[movie] * (float (1) / (float (1) + tau * deltat));
+    float time_factor = exp(-deltat / tau);
+    float raw_corr = delta * correlation_values[movie] * time_factor + gamma;
+    // Simgoid function
+    adjusted_corr[movie] = (float) 1 / ((float) 1 + exp(-raw_corr));
     to_sort->push_back(movie);
   }
   // Sort the other movies that the user has watched
@@ -64,13 +66,12 @@ float TIME_KNN::predict_one(struct data data) {
   for (int i = 0; i < num_neighbors; i++) {
     int neighbor = sorted_correlations->at(i);
     float z_rating = ((float) movie_ratings[neighbor] - movie_means[neighbor]) / movie_std[neighbor];
-    numer += (float) z_rating * pow(adjusted_pearson[neighbor], e);
-    denom += pow(adjusted_pearson[neighbor], e);
+    numer += (float) z_rating * pow(adjusted_corr[neighbor], e);
+    denom += pow(adjusted_corr[neighbor], e);
   }
   delete sorted_correlations;
   delete movie_ratings;
   delete adjusted_corr;
-  delete adjusted_pearson;
   if (denom == 0) {
     return 3;
   }
@@ -178,14 +179,12 @@ void TIME_KNN::fit_part(int start, int end, struct dataset* mu_train, struct dat
     }
 
     // Calculate correlations and update corr
-    float* pearson_values = new float[num_movies];
     float* movie_correlations = new float[num_movies];
     for (int i = 0; i < num_movies; i++) {
-      pearson_values[i] = this->calculate_pearson(&intermediates[i]);
-      movie_correlations[i] = this->calculate_corr(&intermediates[i], pearson_values[i]);
+      float p = this->calculate_pearson(&intermediates[i]);
+      movie_correlations[i] = this->calculate_corr(&intermediates[i], p);
     }
     corr->update_row(movie, movie_correlations);
-    pearson_corr->update_row(movie, pearson_values);
     delete intermediates;
   }
 }

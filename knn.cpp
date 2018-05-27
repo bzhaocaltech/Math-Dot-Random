@@ -360,8 +360,6 @@ float KNN::calculate_pearson(struct pearson* p) {
   else {
     pearson = (numer / (denom_1 * denom_2));
   }
-  // Normalize pearson to a value between 0 and 1
-  pearson = (pearson + 1) / (float) 2;
   // Ignore values below a certain number
   if (pearson < min_pearson) {
     return 0;

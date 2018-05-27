@@ -53,10 +53,7 @@ class KNN : public Model {
     /* Fit on part of the dataset */
     void fit_part(int start, int end, struct dataset* mu_train, struct dataset* um_train, bool track_progress = false);
 
-    /* Calculate the correlation based on the given struct (in this case a
-     * pearson struct) */
     float calculate_pearson(struct pearson* p);
-
     float calculate_corr(struct pearson* p, float pearson);
   public:
     /* Constructor for KNN
