@@ -9,7 +9,7 @@ class SVDPP : public SVD {
 
     /* Matrix of implicit feedbacks. y->row(i) represents the implicit feedback
      * vector associated with movie j */
-    Matrix* y;
+    Matrix<float>* y;
 
     /* Returns the error when trying to predict a data point */
     float get_err(struct data d);
