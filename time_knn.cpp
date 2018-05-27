@@ -23,6 +23,7 @@ void TIME_KNN::set_tau(float tau) {
 /* Predict a single datapoint */
 float TIME_KNN::predict_one(struct data data) {
   float* correlation_values = corr->row(data.movie);
+  float* pearson_values = pearson_corr->row(data.movie);
   // Indices we need to search between to see if a user has rated a movie
   int user_start_index = user_index[data.user];
   int user_end_index;
@@ -32,17 +33,19 @@ float TIME_KNN::predict_one(struct data data) {
   else {
     user_end_index = training_set->size;
   }
-  // Get the nearest neighbors
+  // Get all the other movies that the user has watched
   vector<int>* to_sort = new vector<int>();
   // Also save the ratings and grab adjusted correlation values
   int* movie_ratings = new int[num_movies];
   float* adjusted_corr = new float[num_movies];
+  float* adjusted_pearson = new float[num_movies];
   for (int i = user_start_index; i < user_end_index; i++) {
     struct data curr_point = training_set->data[i];
     int movie = curr_point.movie;
     movie_ratings[movie] = curr_point.rating;
     float deltat = fabs(data.date - curr_point.date);
     adjusted_corr[movie] = correlation_values[movie] * (float (1) / (float (1) + tau * deltat));
+    adjusted_pearson[movie] = pearson_values[movie] * (float (1) / (float (1) + tau * deltat));
     to_sort->push_back(movie);
   }
   // Sort the other movies that the user has watched
@@ -60,16 +63,21 @@ float TIME_KNN::predict_one(struct data data) {
   float denom = 0;
   for (int i = 0; i < num_neighbors; i++) {
     int neighbor = sorted_correlations->at(i);
-    numer += movie_ratings[neighbor] * pow(correlation_values[neighbor], e);
-    denom += pow(correlation_values[neighbor], e);
+    float z_rating = ((float) movie_ratings[neighbor] - movie_means[neighbor]) / movie_std[neighbor];
+    numer += (float) z_rating * pow(adjusted_pearson[neighbor], e);
+    denom += pow(adjusted_pearson[neighbor], e);
   }
   delete sorted_correlations;
   delete movie_ratings;
   delete adjusted_corr;
+  delete adjusted_pearson;
   if (denom == 0) {
     return 3;
   }
-  return (numer / (denom));
+  float value = numer / denom;
+  // Convert from z value back to regular rating
+  float rating = (value * movie_std[data.movie]) + movie_means[data.movie];
+  return rating;
 }
 
 /* Given a list of x values in the form of (user, movie, time) predicts
@@ -162,16 +170,22 @@ void TIME_KNN::fit_part(int start, int end, struct dataset* mu_train, struct dat
       // For every other movie the user rated, update pearson for (movie, other_movie)
       for (int l = user_start_index; l < user_end_index; l++) {
         struct data u_data = um_train->data[l];
-        update_pearson(&intermediates[u_data.movie], movie_data.rating, u_data.rating);
+        // Convert to z scores
+        float curr_movie_z = ((float) movie_data.rating - movie_means[movie]) / movie_std[movie];
+        float o_movie_z = ((float) u_data.rating - movie_means[u_data.movie]) / movie_std[u_data.movie];
+        update_pearson(&intermediates[u_data.movie], curr_movie_z, o_movie_z);
       }
     }
 
     // Calculate correlations and update corr
+    float* pearson_values = new float[num_movies];
     float* movie_correlations = new float[num_movies];
     for (int i = 0; i < num_movies; i++) {
-      movie_correlations[i] = this->calculate_corr(&intermediates[i]);
+      pearson_values[i] = this->calculate_pearson(&intermediates[i]);
+      movie_correlations[i] = this->calculate_corr(&intermediates[i], pearson_values[i]);
     }
     corr->update_row(movie, movie_correlations);
+    pearson_corr->update_row(movie, pearson_values);
     delete intermediates;
   }
 }
@@ -188,13 +202,20 @@ void TIME_KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
   fprintf(stderr, "Initializing movie and user index\n");
   unsigned int curr_index = 0;
   movie_index[curr_index] = 0;
+  int curr_count = 0;
   for (int i = 0; i < mu_train->size; i++) {
     struct data data = mu_train->data[i];
     if (data.movie != curr_index) {
+      movie_means[curr_index] /= (float) curr_count;
+      curr_count = 0;
       curr_index++;
       movie_index[curr_index] = i;
     }
+    curr_count++;
+    movie_means[data.movie] += data.rating;
   }
+  // For the last movie
+  movie_means[curr_index] /= (float) curr_count;
   curr_index = 0;
   user_index[curr_index] = 0;
   for (int i = 0; i < um_train->size; i++) {
@@ -204,6 +225,24 @@ void TIME_KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
       user_index[curr_index] = i;
     }
   }
+  // Go back and compute movie standard deviation
+  fprintf(stderr, "Calculating movie standard deviations\n");
+  curr_index = 0;
+  curr_count = 0;
+  float inner_sum = 0;
+  for (int i = 0; i < mu_train->size; i++) {
+    struct data data = mu_train->data[i];
+    if (curr_index != data.movie) {
+      movie_std[curr_index] = pow((inner_sum / (float) curr_count), 0.5);
+      curr_index++;
+      curr_count = 0;
+      inner_sum = 0;
+    }
+    inner_sum += pow(data.rating - movie_means[curr_index], 2);
+    curr_count++;
+  }
+  // For the last movie
+  movie_std[curr_index] = pow((inner_sum / (float) curr_count), 0.5);
   fprintf(stderr, "Movie and user index initialized\n");
 
   // Calculate the pearson coefficient for a single movie

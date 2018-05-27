@@ -13,9 +13,12 @@ KNN::KNN(int n_size, int alpha, float e, float min_pearson, int num_threads, int
   this->e = e;
   this->min_pearson = min_pearson;
   corr = new Matrix<float>(num_movies, num_movies);
+  pearson_corr = new Matrix<float>(num_movies, num_movies);
   sorted_corr = new vector<int>*[num_movies];
   user_index = new int[num_users];
   movie_index = new int[num_movies];
+  movie_means = new float[num_movies];
+  movie_std = new float[num_movies];
   fprintf(stderr, "Creating KNN using Pearson correlation with n_size = %i\n", n_size);
   fprintf(stderr, "Using %d threads\n", num_threads);
   fprintf(stderr, "Using parameter alpha = %d, exp = %f, and min_pearson = %f\n", alpha, e, min_pearson);
@@ -84,8 +87,7 @@ vector<int>* KNN::quicksort_corr(vector<int>* vec, float* values) {
 
 /* Predict a single datapoint */
 float KNN::predict_one(struct data data) {
-  fprintf(stderr,"hi\n");
-  float* correlation_values = corr->row(data.movie);
+  float* pearson_values = pearson_corr->row(data.movie);
   vector<int>* movie_correlations = sorted_corr[data.movie];
   // Indices we need to search between to see if a user has rated a movie
   int user_start_index = user_index[data.user];
@@ -113,8 +115,10 @@ float KNN::predict_one(struct data data) {
     // Update values if the user has watched that movie
     if (movie_neighbor_rating != -1) {
       neighbors_found++;
-      float adjusted_corr = pow(correlation_values[movie_neighbor], e);
-      numer += adjusted_corr * (float) movie_neighbor_rating;
+      float adjusted_corr = pow(pearson_values[movie_neighbor], e);
+      // Convert to z value
+      float movie_z = (movie_neighbor_rating - movie_means[movie_neighbor]) / movie_std[movie_neighbor];
+      numer += adjusted_corr * (float) movie_z;
       denom += adjusted_corr;
       // If we found enough neighbors, stop
       if (neighbors_found == n_size) {
@@ -123,9 +127,11 @@ float KNN::predict_one(struct data data) {
     }
   }
   if (denom == 0) {
-    return 3;
+    return movie_means[data.movie];
   }
-  return (numer / (denom));
+  // Convert from z value to regular rating
+  float z_value = (numer / (denom));
+  return (z_value * movie_std[data.movie]) + movie_means[data.movie];
 }
 
 /* Given a list of x values in the form of (user, movie, time) predicts
@@ -218,16 +224,22 @@ void KNN::fit_part(int start, int end, struct dataset* mu_train, struct dataset*
       // For every other movie the user rated, update pearson for (movie, other_movie)
       for (int l = user_start_index; l < user_end_index; l++) {
         struct data u_data = um_train->data[l];
-        update_pearson(&intermediates[u_data.movie], movie_data.rating, u_data.rating);
+        // Convert to z scores
+        float curr_movie_z = ((float) movie_data.rating - movie_means[movie]) / movie_std[movie];
+        float o_movie_z = ((float) u_data.rating - movie_means[u_data.movie]) / movie_std[u_data.movie];
+        update_pearson(&intermediates[u_data.movie], curr_movie_z, o_movie_z);
       }
     }
 
     // Calculate correlations and update corr
+    float* pearson_values = new float[num_movies];
     float* movie_correlations = new float[num_movies];
     // Also calculate sorted corr
     vector<int>* to_sort = new vector<int>();
     for (int i = 0; i < num_movies; i++) {
-      movie_correlations[i] = this->calculate_corr(&intermediates[i]);
+      pearson_values[i] = this->calculate_pearson(&intermediates[i]);
+      // Penalize sparsity
+      movie_correlations[i] = this->calculate_corr(&intermediates[i], pearson_values[i]);
       // Ignore correlations that are below are equal to 0
       if (movie_correlations[i] > 0) {
         to_sort->push_back(i);
@@ -235,6 +247,7 @@ void KNN::fit_part(int start, int end, struct dataset* mu_train, struct dataset*
     }
     sorted_corr[movie] = quicksort_corr(to_sort, movie_correlations);
     corr->update_row(movie, movie_correlations);
+    pearson_corr->update_row(movie, pearson_values);
     delete intermediates;
   }
 }
@@ -251,13 +264,20 @@ void KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
   fprintf(stderr, "Initializing movie and user index\n");
   unsigned int curr_index = 0;
   movie_index[curr_index] = 0;
+  int curr_count = 0;
   for (int i = 0; i < mu_train->size; i++) {
     struct data data = mu_train->data[i];
     if (data.movie != curr_index) {
+      movie_means[curr_index] /= (float) curr_count;
+      curr_count = 0;
       curr_index++;
       movie_index[curr_index] = i;
     }
+    curr_count++;
+    movie_means[data.movie] += data.rating;
   }
+  // For the last movie
+  movie_means[curr_index] /= (float) curr_count;
   curr_index = 0;
   user_index[curr_index] = 0;
   for (int i = 0; i < um_train->size; i++) {
@@ -267,6 +287,24 @@ void KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
       user_index[curr_index] = i;
     }
   }
+  // Go back and compute movie standard deviation
+  fprintf(stderr, "Calculating movie standard deviations\n");
+  curr_index = 0;
+  curr_count = 0;
+  float inner_sum = 0;
+  for (int i = 0; i < mu_train->size; i++) {
+    struct data data = mu_train->data[i];
+    if (curr_index != data.movie) {
+      movie_std[curr_index] = pow((inner_sum / (float) curr_count), 0.5);
+      curr_index++;
+      curr_count = 0;
+      inner_sum = 0;
+    }
+    inner_sum += pow(data.rating - movie_means[curr_index], 2);
+    curr_count++;
+  }
+  // For the last movie
+  movie_std[curr_index] = pow((inner_sum / (float) curr_count), 0.5);
   fprintf(stderr, "Movie and user index initialized\n");
 
   // Calculate the pearson coefficient for a single movie
@@ -300,9 +338,18 @@ void KNN::fit(struct dataset* um_train, struct dataset* mu_train) {
   fprintf(stderr, "Correlations calculated. Model has been fitted\n");
 }
 
-/* Calculate the correlation based on the given struct (in this case a
- * pearson struct) */
-float KNN::calculate_corr(struct pearson* p) {
+/* Calculate the correlation from the pearson value */
+float KNN::calculate_corr(struct pearson* p, float pearson) {
+  // Penalize sparsity
+  float sparse_pearson = pearson * (float) p->cnt / ((float) p->cnt + this->alpha);
+  return sparse_pearson;
+}
+
+/* Calculate the basic pearson correlation on the given struct */
+float KNN::calculate_pearson(struct pearson* p) {
+  if (p->cnt == 0) {
+    return 0;
+  }
   float numer = p->cnt * p->xy - (p->x * p->y);
   float denom_1 = pow((float) (p->cnt * p->xx - p->x * p->x), 0.5);
   float denom_2 = pow((float) (p->cnt * p->yy - p->y * p->y), 0.5);
@@ -313,19 +360,21 @@ float KNN::calculate_corr(struct pearson* p) {
   else {
     pearson = (numer / (denom_1 * denom_2));
   }
+  // Normalize pearson to a value between 0 and 1
+  pearson = (pearson + 1) / (float) 2;
   // Ignore values below a certain number
   if (pearson < min_pearson) {
     return 0;
   }
-  // Penalize sparsity
-  float sparse_pearson = pearson * (float) p->cnt / ((float) p->cnt + this->alpha);
-  return sparse_pearson;
+  return pearson;
 }
 
 KNN::~KNN() {
   delete corr;
   delete sorted_corr;
   delete user_index;
+  delete movie_means;
+  delete movie_std;
 }
 
 // Initialize a pearson struct

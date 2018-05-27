@@ -23,6 +23,8 @@ class KNN : public Model {
     /* 2D array that contains all correlations. corr[i][j] holds similarity
      * between movies i and j */
     Matrix<float>* corr;
+    /* Unmodified pearson correlation values */
+    Matrix<float>* pearson_corr;
     /* The values of corr sorted such that corr[i][j] represents the movie with
      * the jth highest correlation with movie i */
     // NOTE: We ignore correlations below 0.5
@@ -34,6 +36,10 @@ class KNN : public Model {
      * movie_index[i] represents the first index where movie i appears in mu_train */
     int* user_index;
     int* movie_index;
+
+    /* User mean and standard deviation of their ratings. Used to normalize the data */
+    float* movie_means;
+    float* movie_std;
 
     /* Quicksort indices based on corr to create sorted_corr */
     vector<int>* quicksort_corr(vector<int>* vec, float* values);
@@ -49,7 +55,9 @@ class KNN : public Model {
 
     /* Calculate the correlation based on the given struct (in this case a
      * pearson struct) */
-    float calculate_corr(struct pearson* p);
+    float calculate_pearson(struct pearson* p);
+
+    float calculate_corr(struct pearson* p, float pearson);
   public:
     /* Constructor for KNN
      * n_size is the size of the neighborhood. alpha is a term representing how
