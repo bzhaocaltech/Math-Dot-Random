@@ -269,12 +269,13 @@ void SVD::fit(struct dataset* dataset, int epochs, float early_stopping, struct 
             // Early stopping
             else if (prev_RMSE < score + early_stopping) {
               failed_epochs++;
+              fprintf(stderr, "Failed epochs: %d\n", failed_epochs);
             }
             else {
               failed_epochs = 0;
             }
             // If we have three consecutive failures to decrease RMSE, stop
-            if (failed_epochs == 3) {
+            if (failed_epochs > 2) {
               fprintf(stderr, "RMSE did not decrease significantly for three consecutive epochs. Stopping early\n");
               break;
             }
