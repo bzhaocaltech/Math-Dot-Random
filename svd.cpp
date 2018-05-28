@@ -256,7 +256,7 @@ void SVD::fit(struct dataset* dataset, int epochs, float early_stopping, struct 
         }
 
         // Reduce the learning rate
-        this->eta *= 0.9;
+        this->eta *= 0.95;
 
         fprintf(stderr, "\n");
         // Get error on validation set
