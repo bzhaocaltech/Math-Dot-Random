@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   int epochs = atoi(argv[4]);
   float early_stopping = atoi(argv[5]);
   string file_name = string("models/svd_") + argv[1] + "_" + argv[2] + "_" + argv[3]
-  + "_" + argv[4] + ".ser";
+  + "_" + argv[4] + "_";
 
   struct dataset* x_train = unserialize("data/mu_train.ser");
   struct dataset* x_valid = unserialize("data/mu_valid.ser");
@@ -40,14 +40,17 @@ int main(int argc, char *argv[]) {
 
   struct dataset* x_test = unserialize("data/mu_qual.ser");
   std::vector<float>* predictions = svd->predict(x_test);
+  std::vector<float>* blend = svd->predict(x_probe);
 
-  output(*predictions, "results.dta");
+  output(*predictions, file_name + "results.dta");
+  output(*blend, file_name + "blend.dta");
 
   delete x_test->data;
   delete x_test;
   delete predictions;
+  delete blend;
 
-  svd->serialize(file_name);
+  // svd->serialize(file_name);
 
   return 0;
 }
