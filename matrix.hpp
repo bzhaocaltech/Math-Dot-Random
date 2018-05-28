@@ -9,11 +9,11 @@
 
 using namespace std;
 
-class Matrix {
+template <class T> class Matrix {
   private:
     int num_rows;
     int num_cols;
-    float* matrix;
+    T* matrix;
     std::mutex** row_locks;
   public:
     /* Constructor class for matrix */
@@ -23,13 +23,13 @@ class Matrix {
     Matrix(string file);
 
     /* Returns a pointer to the beginning of a particular row of the matrix */
-    float* row(int row);
+    T* row(int row);
 
     /* Returns the value of a particular element of the matrix */
-    int get_val(int row, int col);
+    T get_val(int row, int col);
 
     /* Sets the value of a particular element of the matrix */
-    void set_val(int row, int col, float val);
+    void set_val(int row, int col, T val);
 
     /* Returns number of rows */
     int get_num_rows(void);
@@ -41,7 +41,7 @@ class Matrix {
     void mul_scalar(float scalar);
 
     /* Updates with a matrix row pointed to by new_row. Frees new_row afterwards. */
-    void update_row(int row, float* new_row);
+    void update_row(int row, T* new_row);
 
     /* Serializes a matrix to a file */
     void serialize(string file);

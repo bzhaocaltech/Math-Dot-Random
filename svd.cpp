@@ -10,8 +10,8 @@
 
 /* Constructor for SVD */
 SVD::SVD(int latent_factors, float eta, float reg, int num_users, int num_movies) {
-    this->U = new Matrix(num_users, latent_factors);
-    this->V = new Matrix(num_movies, latent_factors);
+    this->U = new Matrix<float>(num_users, latent_factors);
+    this->V = new Matrix<float>(num_movies, latent_factors);
     this->a = new Vector(num_users);
     this->b = new Vector(num_movies);
     this->latent_factors = latent_factors;
@@ -38,8 +38,8 @@ SVD::SVD(string file) {
     ia & mu;
 
     /* Unserialize the U and V matrices */
-    U = new Matrix(file.substr(0, file.length() - 4) + "_U_matrix.ser");
-    V = new Matrix(file.substr(0, file.length() - 4) + "_V_matrix.ser");
+    U = new Matrix<float>(file.substr(0, file.length() - 4) + "_U_matrix.ser");
+    V = new Matrix<float>(file.substr(0, file.length() - 4) + "_V_matrix.ser");
 
     /* Unserialize a and b */
     float* a_float = new float[num_users];
@@ -290,3 +290,6 @@ SVD::~SVD() {
     delete this->U;
     delete this->V;
 }
+
+template class Matrix<int>;
+template class Matrix<float>;
