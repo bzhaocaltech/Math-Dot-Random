@@ -129,8 +129,6 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
       new_u[i] = Ui[i] - U_grad;
     }
     delete f_factor;
-    this->U->update_row(user, new_u);
-    this->V->update_row(movie, new_v);
     // Update a
     float a_reg_term = this->a->at(user) * this->reg;
     float a_eta_grad = this->eta * (a_reg_term - error);
@@ -155,6 +153,8 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
       }
       this->y->update_row(movie_watched, new_y);
     }
+    this->U->update_row(user, new_u);
+    this->V->update_row(movie, new_v);
     // Track progress
     if ((n % dot_break == 0) && track_progress) {
       fprintf(stderr, ".");

@@ -4,16 +4,16 @@
 #include <stdlib.h>
 
 int main() {
-  float alpha[2] = {300, 400};
-  int num_alpha = 2;
-  float n_size[2] = {30, 35};
-  int num_n_size = 2;
-  float beta[3] = {750, 800, 850};
-  int num_beta = 3;
-  float gamma[3] = {-9, -8.5, -8};
+  float alpha[1] = {175};
+  int num_alpha = 1;
+  float n_size[1] = {30};
+  int num_n_size = 1;
+  float beta[2] = {1500, 1750};
+  int num_beta = 2;
+  float gamma[3] = {-8.5, -8.25, -8};
   int num_gamma = 3;
-  float delta[4] = {12, 13, 14, 15};
-  int num_delta = 4;
+  float delta[3] = {13.25, 13.5, 13.75};
+  int num_delta = 3;
   // Fit a model for each alpha value
   fprintf(stdout, "Alpha, n_size, tau, gamma, delta\n");
   for (int i = 0; i < num_alpha; i++) {
