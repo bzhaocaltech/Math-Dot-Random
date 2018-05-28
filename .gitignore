@@ -2,9 +2,12 @@ mu/
 um/
 data/
 models/
+logs/
 *.o
 load_data
 run_svd
 run_svdpp
 run_mean_model
 *.dta
+client-secret.json
+__pycache__/

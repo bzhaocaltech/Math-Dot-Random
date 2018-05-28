@@ -162,7 +162,7 @@ void SVDPP::grad_part(struct dataset* ds, bool track_progress) {
   }
 }
 
-void SVDPP::fit(struct dataset* dataset, int epochs, struct dataset* validation_set, int num_threads) {
+void SVDPP::fit(struct dataset* dataset, int epochs, float early_stopping, struct dataset* validation_set, int num_threads) {
   fprintf(stderr, "Fitting the data of size %i\n", dataset->size);
   fprintf(stderr, "Using %i threads\n", num_threads);
 
@@ -257,7 +257,7 @@ void SVDPP::fit(struct dataset* dataset, int epochs, struct dataset* validation_
           prev_RMSE = score;
         }
         // Early stopping
-        else if (prev_RMSE < score + 0.0005) {
+        else if (prev_RMSE < score + early_stopping) {
           failed_epochs++;
         }
         else {

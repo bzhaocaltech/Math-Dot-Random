@@ -53,7 +53,7 @@ class SVD : public Model {
 
         /* Given a list of x values in the form of (user, movie, time, rating)
          * fits the model */
-        void fit(struct dataset* dataset, int epochs, struct dataset* validation_set = NULL, int num_threads = 16);
+        void fit(struct dataset* dataset, int epochs, float early_stopping, struct dataset* validation_set = NULL, int num_threads = 16);
 
         /* Destructor for SVD */
         ~SVD();
