@@ -2,11 +2,12 @@ CXX = g++
 CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG -pthread -O3
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
-EXECUTABLES = load_data run_mean_model run_svd run_svdpp run_knn run_time_knn tune_time_knn
+EXECUTABLES = load_data run_mean_model run_svd run_svdpp run_knn run_time_knn tune_time_knn run_time_svdpp
 LOAD_DATA_DEP = load_data.o serialize.o
 MEAN_MODEL_DEP = mean_model.o serialize.o run_mean_model.o model.o output.o
 SVD_DEP = matrix.o vector.o svd.o run_svd.o model.o serialize.o output.o
 SVDPP_DEP = matrix.o vector.o svd.o serialize.o output.o model.o svdpp.o run_svdpp.o
+TIME_SVDPP_DEP = matrix.o vector.o svd.o serialize.o output.o model.o svdpp.o run_time_svdpp.o time_svdpp.o
 KNN_DEP = matrix.o knn.o serialize.o output.o model.o run_knn.o
 TIME_KNN_DEP = matrix.o knn.o serialize.o output.o model.o time_knn.o run_time_knn.o
 TUNE_TIME_KNN_DEP = matrix.o knn.o serialize.o output.o model.o time_knn.o tune_time_knn.o
@@ -37,6 +38,9 @@ svd.o: model.o svd.cpp svd.hpp
 svdpp.o: svd.o svdpp.cpp svdpp.hpp
 	$(CXX) $(CXXFLAGS) -c svdpp.cpp
 
+time_svdpp.o: svdpp.o time_svdpp.hpp time_svdpp.cpp
+	$(CXX) $(CXXFLAGS) -c time_svdpp.cpp
+
 knn.o: knn.cpp knn.hpp model.o
 	$(CXX) $(CXXFLAGS) -c knn.cpp
 
@@ -54,6 +58,9 @@ run_svd: $(SVD_DEP)
 
 run_svdpp: $(SVDPP_DEP)
 	$(CXX) $(CXXFLAGS) $(SVDPP_DEP) -o run_svdpp $(BOOSTSERIALIZE)
+
+run_time_svdpp: $(TIME_SVDPP_DEP)
+	$(CXX) $(CXXFLAGS) $(TIME_SVDPP_DEP) -o run_time_svdpp $(BOOSTSERIALIZE)
 
 run_knn: $(KNN_DEP)
 	$(CXX) $(CXXFLAGS) $(KNN_DEP) -o run_knn $(BOOSTSERIALIZE)

@@ -76,7 +76,9 @@ T Matrix<T>::get_val(int row, int col) {
 /* Sets the value of a particular element of the matrix */
 template <class T>
 void Matrix<T>::set_val(int row, int col, T val) {
+    this->row_locks[row]->lock();
     this->matrix[row * this->num_cols + col] = val;
+    this->row_locks[row]->unlock();
 }
 
 /* Returns number of rows */
