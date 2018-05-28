@@ -23,17 +23,20 @@ int main() {
   delete x_valid->data;
   delete x_valid;
 
-  struct dataset* x_test = unserialize("data/mu_qual.ser");
+  struct dataset* x_test = unserialize("data/um_qual.ser");
+  struct dataset* x_probe = unserialize("data/um_probe.ser");
   vector<float>* predictions = model->predict(x_test);
+  vector<float>* probe_predictions = model->predict(x_probe);
 
-  output(*predictions, "results.dta");
+  output(*predictions, "mean_model_results.dta");
+  output(*probe_predictions, "mean_model_blend.dta");
 
   delete x_test->data;
   delete x_test;
   delete predictions;
-
-  // Serialize the mean model
-  model->serialize("models/mean_model.ser");
+  delete probe_predictions;
+  delete x_probe->data;
+  delete x_probe;
 
   return 0;
 }

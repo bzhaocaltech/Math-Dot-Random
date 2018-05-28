@@ -85,7 +85,7 @@ float TIME_SVDPP::get_devt(int user, int date) {
   else {
     return 0;
   }
-  return value / (float) 2;
+  return value;
 }
 
 void TIME_SVDPP::grad_part(struct dataset* ds, bool track_progress) {

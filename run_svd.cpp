@@ -16,13 +16,13 @@ int main(int argc, char *argv[]) {
   float eta = atof(argv[2]);
   float reg = atof(argv[3]);
   int epochs = atoi(argv[4]);
-  float early_stopping = atoi(argv[5]);
+  float early_stopping = atof(argv[5]);
   string file_name = string("models/svd_") + argv[1] + "_" + argv[2] + "_" + argv[3]
   + "_" + argv[4] + "_";
 
-  struct dataset* x_train = unserialize("data/mu_train.ser");
-  struct dataset* x_valid = unserialize("data/mu_valid.ser");
-  struct dataset* x_probe = unserialize("data/mu_probe.ser");
+  struct dataset* x_train = unserialize("data/um_train.ser");
+  struct dataset* x_valid = unserialize("data/um_valid.ser");
+  struct dataset* x_probe = unserialize("data/um_probe.ser");
 
   SVD* svd = new SVD(latent_factors, eta, reg);
   svd->fit(x_train, epochs, early_stopping, x_probe);
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   delete x_valid->data;
   delete x_valid;
 
-  struct dataset* x_test = unserialize("data/mu_qual.ser");
+  struct dataset* x_test = unserialize("data/um_qual.ser");
   std::vector<float>* predictions = svd->predict(x_test);
   std::vector<float>* blend = svd->predict(x_probe);
 

@@ -46,7 +46,7 @@ class TIME_SVDPP : public SVDPP {
     void grad_part(struct dataset* ds, bool track_progress);
   public:
     /* Constructor for SVDPP */
-    TIME_SVDPP(int latent_factors, float eta, float reg, float beta = 0.4,
+    TIME_SVDPP(int latent_factors, float eta, float reg, float beta = 0.2,
                int num_bins = 30, int num_dates = NUM_DATES,
                int num_users = NUM_USERS, int num_movies = NUM_MOVIES);
 

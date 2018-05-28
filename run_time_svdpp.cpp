@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   std::vector<float>* probe_predictions = time_svdpp->predict(x_probe);
 
   output(*predictions, "results.dta");
-  output(*probe_predictions, "probe.dta");
+  output(*probe_predictions, "blend.dta");
 
   delete x_test->data;
   delete x_test;

@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -std=c++14 -Wall -g -DNDEBUG -DBOOST_UBLAS_NDEBUG -pthread -O3
 BOOSTSERIALIZE = -lboost_serialization
 .PHONY: clean
-EXECUTABLES = load_data run_mean_model run_svd run_svdpp run_knn run_time_knn tune_time_knn run_time_svdpp
+EXECUTABLES = load_data run_mean_model run_svd run_svdpp run_knn run_time_knn tune_time_knn run_time_svdpp run_blend
 LOAD_DATA_DEP = load_data.o serialize.o
 MEAN_MODEL_DEP = mean_model.o serialize.o run_mean_model.o model.o output.o
 SVD_DEP = matrix.o vector.o svd.o run_svd.o model.o serialize.o output.o
@@ -11,6 +11,7 @@ TIME_SVDPP_DEP = matrix.o vector.o svd.o serialize.o output.o model.o svdpp.o ru
 KNN_DEP = matrix.o knn.o serialize.o output.o model.o run_knn.o
 TIME_KNN_DEP = matrix.o knn.o serialize.o output.o model.o time_knn.o run_time_knn.o
 TUNE_TIME_KNN_DEP = matrix.o knn.o serialize.o output.o model.o time_knn.o tune_time_knn.o
+BLEND_DEP = matrix.o serialize.o input.o output.o better_blend.o run_blend.o vector.o
 
 all: $(EXECUTABLES)
 
@@ -28,6 +29,12 @@ model.o: model.hpp model.cpp
 
 output.o: output.hpp output.cpp
 	$(CXX) $(CXXFLAGS) -c output.cpp
+
+input.o: input.hpp input.cpp
+	$(CXX) $(CXXFLAGS) -c input.cpp
+
+better_blend.o: better_blend.hpp better_blend.cpp
+	$(CXX) $(CXXFLAGS) -c better_blend.cpp
 
 mean_model.o: model.o mean_model.cpp mean_model.hpp
 	$(CXX) $(CXXFLAGS) -c mean_model.cpp
@@ -49,6 +56,9 @@ time_knn.o: time_knn.cpp knn.cpp time_knn.hpp
 
 matrix.o: matrix.cpp matrix.hpp
 	$(CXX) $(CXXFLAGS) -c matrix.cpp
+
+run_blend: $(BLEND_DEP)
+	$(CXX) $(CXXFLAGS) $(BLEND_DEP) -o run_blend $(BOOSTSERIALIZE)
 
 run_mean_model: $(MEAN_MODEL_DEP)
 	$(CXX) $(CXXFLAGS) $(MEAN_MODEL_DEP) -o run_mean_model $(BOOSTSERIALIZE)
