@@ -18,3 +18,7 @@ for i, c_val in enumerate(c):
     blend_results += qual_data[i] * c_val
 
 print('blend results: {}'.format(blend_results))
+
+with open('blend.dta', 'w') as blend_file:
+    for v in blend_results:
+        blend_file.write('{}\n'.format(v))
