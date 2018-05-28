@@ -122,7 +122,8 @@ void better_blend::grad_one(struct data data, float* model_ratings) {
   float new_movie_bias = movie_bias - grad;
 
   // user_constants->update_row(data.user, new_user_c);
-  // movie_constants->update_row(data.movie, new_movie_c);
-  user_biases->update_element(data.user, new_user_bias);
+  delete new_user_c;
+  movie_constants->update_row(data.movie, new_movie_c);
+  // user_biases->update_element(data.user, new_user_bias);
   movie_biases->update_element(data.movie, new_movie_bias);
 }

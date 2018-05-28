@@ -31,9 +31,9 @@ int main(int argc, char *argv[]) {
   vector<float>** qual_data = input(num_models, qual_models);
   // Input results from python blend here. Or just pick values you think you like
   float* avg_constants = new float[num_models];
-  avg_constants[0] = 0.45; // for knn
-  avg_constants[1] = 0.53; // for svd
-  avg_constants[2] = 0.02; // for mean model
+  avg_constants[0] = 0.4842825; // for knn
+  avg_constants[1] = 0.60357575; // for svd
+  avg_constants[2] = -0.10229743; // for mean model
 
   struct dataset* x_probe = unserialize("data/mu_probe.ser");
   struct dataset* x_test = unserialize("data/mu_qual.ser");
