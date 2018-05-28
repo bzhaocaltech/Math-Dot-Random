@@ -39,10 +39,15 @@ int main(int argc, char *argv[]) {
   struct dataset* x_test = unserialize("data/um_qual.ser");
   std::vector<float>* predictions = time_svdpp->predict(x_test);
 
+  std::vector<float>* probe_predictions = time_svdpp->predict(x_probe);
+
   output(*predictions, "results.dta");
+  output(*probe_predictions, "probe.dta");
 
   delete x_test->data;
   delete x_test;
+  delete x_probe->data;
+  delete x_probe;
   delete predictions;
 
   return 0;

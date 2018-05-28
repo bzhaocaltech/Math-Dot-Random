@@ -74,16 +74,18 @@ float TIME_SVDPP::predict_one(struct data d) {
 
 /* Returns dev_u(t) */
 float TIME_SVDPP::get_devt(int user, int date) {
-  float deltat = date - mean_user_time[user];
+  float deltat = (float) date - mean_user_time[user];
+  float value;
   if (deltat > 0) {
-    return pow(fabs(date - mean_user_time[user]), beta);
+    value = pow(fabs(deltat), beta);
   }
   else if (deltat < 0) {
-    return (float) -1 * pow(fabs(date - mean_user_time[user]), beta);
+    value =  (float) -1 * pow(fabs(deltat), beta);
   }
   else {
     return 0;
   }
+  return value / (float) 2;
 }
 
 void TIME_SVDPP::grad_part(struct dataset* ds, bool track_progress) {
@@ -124,7 +126,6 @@ void TIME_SVDPP::grad_part(struct dataset* ds, bool track_progress) {
       prediction += Vj[i] * adjusted_Ui;
     }
     prediction += mu + adjusted_b + adjusted_a;
-    fprintf(stderr, "%f \n", prediction);
     // Use prediction to calculate the error
     float error = (float) rating - prediction;
 
@@ -256,7 +257,7 @@ struct dataset* validation_set, int num_threads) {
   // Initialize TIME_SVDPP factors randomly
   for (int i = 0; i < this->num_movies; i++) {
     for (int j = 0; j < this->latent_factors; j++) {
-      float random = (((float) rand()) / (float) RAND_MAX) - 0.5;
+      float random = 0;
       this->bin_values->set_val(i, j, random);
     }
   }
@@ -277,11 +278,13 @@ struct dataset* validation_set, int num_threads) {
   fprintf(stderr, "Calculating date means\n");
   unsigned int curr_index = 0;
   int curr_count = 0;
+  mean_user_time[0] = 0;
   for (int i = 0; i < dataset->size; i++) {
     struct data data = dataset->data[i];
     if (data.user != curr_index) {
       mean_user_time[curr_index] /= (float) curr_count;
       curr_index++;
+      mean_user_time[curr_index] = 0;
       curr_count = 0;
     }
     mean_user_time[curr_index] += data.date;
@@ -355,7 +358,7 @@ struct dataset* validation_set, int num_threads) {
           prev_RMSE = score;
         }
         // Early stopping
-        else if (prev_RMSE < score + 0.0005) {
+        else if (prev_RMSE < score + 0.0003) {
           failed_epochs++;
         }
         else {

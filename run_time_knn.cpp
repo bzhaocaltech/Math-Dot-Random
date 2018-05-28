@@ -32,7 +32,10 @@ int main(int argc, char *argv[]) {
   struct dataset* test = unserialize("data/um_qual.ser");
   std::vector<float>* predictions = time_knn->predict(test);
 
+  std::vector<float>* probe_predictions = time_knn->predict(probe);
+
   output(*predictions, "results.dta");
+  output(*probe_predictions, "probe.dta");
 
   delete test->data;
   delete test;
@@ -43,6 +46,7 @@ int main(int argc, char *argv[]) {
   delete probe->data;
   delete probe;
   delete predictions;
+  delete probe_predictions;
 
   return 0;
 }
